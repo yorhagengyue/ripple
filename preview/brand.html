@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brand — Toffeemoon</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#fafaf7;font-family:var(--font-sans);color:var(--y-fg);}
+  .page{max-width:1280px;margin:0 auto;padding:48px 56px 96px;}
+  .pagehead{display:flex;justify-content:space-between;align-items:baseline;gap:24px;margin-bottom:40px;border-bottom:1px solid rgba(36,28,24,0.12);padding-bottom:24px;}
+  .pagehead h1{font-family:var(--font-display);font-weight:600;font-size:2.4rem;letter-spacing:-0.02em;margin:0;}
+  .pagehead p{color:var(--y-fg-muted);margin:0;max-width:46ch;font-size:0.95rem;line-height:1.6;}
+
+  .sec{margin-bottom:56px;}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:20px;}
+  .sec-head .eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y-fg-muted);}
+  .sec-head h2{font-family:var(--font-display);font-weight:600;font-size:1.6rem;margin:0;letter-spacing:-0.015em;}
+  .sec-head .bar{flex:1;height:1px;background:rgba(36,28,24,0.1);align-self:center;}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+  .brand-card{border-radius:24px;padding:36px 36px 32px;border:1px solid rgba(36,28,24,0.08);background:#fffaf4;}
+  .brand-card .role{font-family:var(--font-sans);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y-fg-muted);margin-bottom:14px;}
+  .brand-card .wordmark{font-family:var(--font-display);font-weight:600;font-size:2rem;letter-spacing:-0.02em;}
+  .brand-card .wordmark .accent{color:var(--y-accent);}
+  .brand-card .tag{font-family:var(--font-sans);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y-fg-muted);margin-top:10px;}
+  .brand-card.dark{background:#241c18;color:#f6f0e9;border-color:rgba(246,240,233,0.12);}
+  .brand-card.dark .role,.brand-card.dark .tag{color:rgba(246,240,233,0.58);}
+  .brand-card.dark .wordmark{color:#f6f0e9;}
+
+  .brand-card.white{background:#fff;border-color:#e5e5e5;}
+  .brand-card.white .role,.brand-card.white .tag{color:#737373;}
+  .brand-card.green{background:#16a34a;color:#fff;border-color:#138a3f;}
+  .brand-card.green .role,.brand-card.green .tag{color:rgba(255,255,255,0.78);}
+
+  .brand-card img{max-width:100%;}
+
+  .logo-tile{border-radius:18px;padding:36px;display:flex;align-items:center;justify-content:center;min-height:180px;border:1px solid rgba(36,28,24,0.08);}
+  .logo-tile img{max-width:65%;max-height:100px;}
+  .logo-tile.bone{background:#f5f5f5;}
+  .logo-tile.green{background:#16a34a;}
+  .logo-tile.dark{background:#0a0a0a;}
+
+  .voice{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:900px){.voice{grid-template-columns:1fr;}}
+  .voice .col{padding:22px 24px;border:1px solid rgba(36,28,24,0.08);border-radius:16px;background:#fffaf4;}
+  .voice .col h3{font-family:var(--font-display);font-weight:600;font-size:1.15rem;margin:0 0 10px;letter-spacing:-0.01em;}
+  .voice .col p{font-family:var(--font-sans);font-size:.9rem;line-height:1.6;margin:0 0 8px;color:var(--y-fg);}
+  .voice .col .good{color:#2b7a42;}
+  .voice .col .bad{color:#a84b3b;text-decoration:line-through;text-decoration-color:rgba(168,75,59,0.5);}
+
+  .imagery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media (max-width:900px){.imagery{grid-template-columns:1fr 1fr;}}
+  .imagery figure{margin:0;border-radius:16px;overflow:hidden;background:#f5f5f5;border:1px solid rgba(36,28,24,0.08);}
+  .imagery figure img{width:100%;height:220px;object-fit:cover;display:block;}
+  .imagery figcaption{padding:10px 14px;font-family:var(--font-sans);font-size:.72rem;color:var(--y-fg-muted);letter-spacing:.04em;}
+
+  .portrait{display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:center;}
+  @media (max-width:900px){.portrait{grid-template-columns:1fr;}}
+  .portrait .p-img{border-radius:28px;overflow:hidden;aspect-ratio:4/5.15;background:#ead4bc;}
+  .portrait .p-img img{width:100%;height:100%;object-fit:cover;}
+  .portrait .p-copy h3{font-family:var(--font-display);font-weight:600;font-size:1.4rem;margin:0 0 8px;letter-spacing:-0.01em;}
+  .portrait .p-copy p{font-family:var(--font-sans);font-size:.92rem;line-height:1.6;color:var(--y-fg);margin:0 0 8px;}
+  .portrait .p-copy .sm{color:var(--y-fg-muted);font-size:.82rem;}
+
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="pagehead">
+    <h1>Brand</h1>
+    <p>Two marks, one steward. Logos and lockups for Yuqin Chen's portfolio and for CommenHers, with voice and imagery direction for both.</p>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Wordmark</span><h2>Yuqin portfolio</h2><span class="bar"></span></div>
+    <div class="grid-2">
+      <div class="brand-card">
+        <div class="role">Primary — cream</div>
+        <div class="wordmark">Yuqin <span class="accent">Chen</span></div>
+        <div class="tag">Cormorant Garamond 600 · -0.02em · last name in caramel</div>
+      </div>
+      <div class="brand-card dark">
+        <div class="role">Inverse — ink</div>
+        <div class="wordmark">Yuqin <span class="accent">Chen</span></div>
+        <div class="tag">On #241c18 · accent unchanged</div>
+      </div>
+      <div class="brand-card" style="background:#b78356;color:#fffaf4;border-color:rgba(255,250,244,0.2);">
+        <div class="role" style="color:rgba(255,250,244,0.72);">Single color — caramel</div>
+        <div class="wordmark" style="color:#fffaf4;">Yuqin Chen</div>
+        <div class="tag" style="color:rgba(255,250,244,0.72);">For on-brand reversed use — drop the accent split on colored backgrounds</div>
+      </div>
+      <div class="brand-card">
+        <div class="role">Full name</div>
+        <div class="wordmark" style="font-size:1.5rem;">Chen Yufei <span style="color:var(--y-fg-muted);font-weight:500;">(雨飞)</span></div>
+        <div class="tag">Resume / formal contexts · family name first · Chinese name in brackets at 500 weight</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Logo</span><h2>CommenHers</h2><span class="bar"></span></div>
+    <div class="grid-3">
+      <div class="logo-tile"><img src="../assets/commenhers-logo-text.svg" alt="CommenHers logotype"></div>
+      <div class="logo-tile bone"><img src="../assets/commenhers-logo-text.svg" alt="CommenHers on bone"></div>
+      <div class="logo-tile green"><img src="../assets/commenhers-logo-text.svg" alt="CommenHers on green" style="filter:brightness(0) invert(1);"></div>
+      <div class="logo-tile"><img src="../assets/commenhers-logo.svg" alt="Icon only" style="max-height:90px;max-width:90px;"></div>
+      <div class="logo-tile dark"><img src="../assets/commenhers-logo.svg" alt="Icon on dark" style="max-height:90px;max-width:90px;filter:brightness(0) invert(1);"></div>
+      <div class="logo-tile bone"><img src="../assets/commenhers-logo.svg" alt="Icon bone" style="max-height:90px;max-width:90px;"></div>
+    </div>
+    <p style="font-family:var(--font-sans);font-size:.88rem;color:var(--y-fg-muted);margin-top:14px;line-height:1.6;max-width:62ch;">Clear space = 1× the mark's x-height on every side. Prefer the icon-only lockup in square avatars; prefer the wordmark in linear contexts (headers, receipts, email sign-offs).</p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Person</span><h2>Portrait</h2><span class="bar"></span></div>
+    <div class="brand-card">
+      <div class="portrait">
+        <div class="p-img"><img src="../assets/yuqin-profile.jpg" alt="Yuqin Chen"></div>
+        <div class="p-copy">
+          <h3>One portrait. One person. Used once.</h3>
+          <p>The hero portrait appears exactly once on the portfolio — next to the display hero. Do not repeat it in the footer, the About section, or any social share card.</p>
+          <p class="sm">Crop: 4 : 5.15 · Tone: warm daylight, no filters, no black/white conversion · Border-radius: 28px in the hero card, 20px in the chapter-guide preview.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Photography</span><h2>CommenHers imagery</h2><span class="bar"></span></div>
+    <div class="imagery">
+      <figure><img src="../assets/commenhers-continuum-daypack.png" alt=""><figcaption>Product · neutral set</figcaption></figure>
+      <figure><img src="../assets/commenhers-nomad-air-sling.png" alt=""><figcaption>Product · on-model fabric</figcaption></figure>
+      <figure><img src="../assets/commenhers-climbing-rope-strap.png" alt=""><figcaption>Detail · material close-up</figcaption></figure>
+      <figure><img src="../assets/commenhers-community-maker.jpg" alt=""><figcaption>Community · maker at work</figcaption></figure>
+      <figure><img src="../assets/commenhers-studio-space.jpg" alt=""><figcaption>Studio · warm daylight</figcaption></figure>
+      <figure><img src="../assets/commenhers-fashion-show.jpg" alt=""><figcaption>Runway · editorial</figcaption></figure>
+    </div>
+    <p style="font-family:var(--font-sans);font-size:.88rem;color:var(--y-fg-muted);margin-top:14px;line-height:1.6;max-width:62ch;">Warm daylight, natural color, gentle contrast. Allow hands, stitches, tool-marks to show. Avoid cool tones, pure-white seamless, or flat-lay studio gloss.</p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Voice</span><h2>Copy style</h2><span class="bar"></span></div>
+    <div class="voice">
+      <div class="col">
+        <h3>Yuqin</h3>
+        <p class="good">✓ "I'm a penultimate-year communication management student with a strong interest in how stories are translated into brand systems."</p>
+        <p class="good">✓ "The portfolio is intentionally quiet — this lets the work carry the weight."</p>
+        <p class="bad">✗ "Let's build something amazing together! 🚀"</p>
+        <p class="bad">✗ "Passionate · Driven · Results-focused"</p>
+      </div>
+      <div class="col">
+        <h3>CommenHers</h3>
+        <p class="good">✓ "Where upcycling becomes a lifestyle for all."</p>
+        <p class="good">✓ "Commenhers works with local makers to transform discarded textiles into objects people use every day."</p>
+        <p class="bad">✗ "Revolutionary zero-waste ecosystem of next-gen textile solutions."</p>
+        <p class="bad">✗ "Join the movement! 🌱💚"</p>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

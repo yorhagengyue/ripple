@@ -1,0 +1,174 @@
+/* Toffeemoon Design System — Foundations
+ * Covers two products under Chen Yu Fei's umbrella:
+ * - Yuqin Chen Portfolio (warm editorial, caramel + cream)
+ * - CommenHers (sustainable fashion, fresh green + bone white)
+ * Both share a calm, minimal temperament with generous whitespace.
+ */
+
+:root {
+  /* ============ YUQIN (rice paper / vermilion / ink) ============ */
+  --y-bg:            #f1ecdf;   /* rice-paper cream */
+  --y-bg-soft:       #f6f1e5;   /* upper gradient */
+  --y-surface:       rgba(246, 241, 229, 0.9);
+  --y-surface-strong:#faf6ec;
+  --y-fg:            #1a1a1a;   /* ink black */
+  --y-fg-muted:      #7a7266;   /* warm grey */
+  --y-line:          rgba(26, 26, 26, 0.11);
+  --y-line-strong:   rgba(26, 26, 26, 0.22);
+  --y-accent:        #c8472d;   /* vermilion (primary) */
+  --y-accent-soft:   #e89b88;   /* pale vermilion */
+  --y-accent-strong: #9a2f1c;   /* deep vermilion */
+
+  /* ============ COMMENHERS (sustainable / fresh) ============ */
+  --c-bg:            #ffffff;
+  --c-fg:            #0a0a0a;
+  --c-muted:         #f5f5f5;
+  --c-muted-fg:      #737373;
+  --c-border:        #e5e5e5;
+  --c-accent:        #16a34a;   /* green-600 */
+  --c-accent-light:  #86efac;   /* green-300 */
+  --c-accent-ink:    #ffffff;
+  --c-accent-deep:   #14532d;   /* used as overlay */
+
+  /* ============ Shared primitives ============ */
+  --shadow-xs: 0 1px 2px rgba(10, 10, 10, 0.04);
+  --shadow-sm: 0 8px 22px rgba(61, 43, 30, 0.05);
+  --shadow-md: 0 16px 36px rgba(61, 43, 30, 0.06);
+  --shadow-lg: 0 24px 60px rgba(61, 43, 30, 0.08);
+  --shadow-green: 0 10px 32px rgba(0, 0, 0, 0.08), 0 8px 22px rgba(22, 163, 74, 0.14);
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-2xl: 40px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* ============ Type families ============ */
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans:    "Manrope", "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-geist:   "Geist", "Manrope", system-ui, -apple-system, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ============ Type scale (fluid) ============ */
+  --fs-eyebrow: 0.82rem;   /* 13px — uppercase labels */
+  --fs-xs:      0.82rem;
+  --fs-sm:      0.92rem;
+  --fs-base:    1rem;
+  --fs-md:      1.08rem;
+  --fs-lg:      1.25rem;
+  --fs-xl:      1.5rem;
+  --fs-2xl:     2rem;
+  --fs-3xl:     clamp(2.2rem, 3vw, 2.8rem);
+  --fs-display: clamp(4.2rem, 5.8vw, 6.4rem);
+
+  --ls-eyebrow: 0.18em;    /* tracking for uppercase */
+  --ls-pill:    0.14em;
+  --ls-tight:   -0.02em;
+
+  --lh-tight:   0.96;
+  --lh-snug:    1.2;
+  --lh-body:    1.6;
+  --lh-loose:   1.75;
+
+  /* ============ Easing (Persona-5-ish snap) ============ */
+  --ease-out-expo:  cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-soft:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dur-fast:  180ms;
+  --dur-mid:   320ms;
+  --dur-slow:  620ms;
+}
+
+/* ============ Semantic type styles ============ */
+
+.ds-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--y-fg);
+  margin: 0;
+}
+
+.ds-h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 4vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: var(--ls-tight);
+  margin: 0;
+}
+
+.ds-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-3xl);
+  line-height: 1.02;
+  letter-spacing: var(--ls-tight);
+  margin: 0;
+}
+
+/* CommenHers headings use Geist sans, medium weight */
+.ds-h2--sans {
+  font-family: var(--font-geist);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  line-height: 1.02;
+  letter-spacing: var(--ls-tight);
+  margin: 0;
+}
+
+.ds-h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xl);
+  line-height: 1.1;
+  letter-spacing: var(--ls-tight);
+  margin: 0;
+}
+
+.ds-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--y-fg-muted);
+  margin: 0;
+}
+
+.ds-body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--y-fg);
+}
+
+.ds-body-muted {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-loose);
+  color: var(--y-fg-muted);
+}
+
+.ds-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.02em;
+}
+
+/* ============ Utility: focus ring ============ */
+.ds-focus:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}

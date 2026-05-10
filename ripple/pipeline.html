@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pipeline — Ripple</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/colors_and_type.css?v=vermilion3">
+<link rel="stylesheet" href="./shared.css">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#f1ecdf">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ripple">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg">
+<link rel="icon" type="image/svg+xml" href="/icons/ripple-icon.svg">
+</head>
+<body>
+
+<div class="rail rail--left"><span>RIPPLE // WELLNESS · WORKATO-ORCHESTRATED · SINGAPORE ——</span></div>
+<div class="rail rail--right"><span>NAISC 2026 / SENSE · THINK · ACT · CONVERSE</span></div>
+<div class="rail rail--bottom"><span class="url">RIPPLE — WELLNESS AGENT / 2026</span></div>
+
+<header>
+  <div class="nav">
+    <a href="/" data-path="/"><span class="n">00</span> Index</a>
+    <a href="/timeline" data-path="/timeline"><span class="n">01</span> Timeline</a>
+    <a href="/pipeline" data-path="/pipeline"><span class="n">02</span> Pipeline</a>
+    <a href="/chat" data-path="/chat"><span class="n">03</span> Chat</a>
+  </div>
+</header>
+
+<main>
+  <section id="pipeline-page" class="pipeline-page" data-theme="light">
+    <div class="big-num">03</div>
+
+    <div class="pipeline-head" data-reveal>
+      <div class="eyebrow"><span class="slash">//</span> 02 / Pipeline · powered by <span class="wk-mark">Workato</span></div>
+      <h2 class="pipeline-title">Three beats. <em>One spine.</em></h2>
+      <p class="pipeline-lead">
+        <strong>Workato is not middleware here — it is the agent's nervous system.</strong> Every sample enters
+        through a Workato webhook. Every decision is a Workato recipe. And when any AI client —
+        Claude Desktop, Claude Code, Codex, Cursor — needs live physiological context, Workato flips role:
+        it exposes itself as a <span class="mcp-mark">Model Context Protocol</span> server so the LLM dials
+        into the same recipes as callable tools. One source of truth, zero shadow state.
+      </p>
+    </div>
+
+    <ol class="pipe-timeline">
+
+      <li class="pipe-entry pipe-entry--sense" data-reveal>
+        <div class="pipe-node">
+          <span class="pipe-node__n">01</span>
+          <span class="pipe-node__pulse"></span>
+        </div>
+        <div class="pipe-body">
+          <div class="pipe-kicker">Sense <span class="pipe-kicker__dot">·</span> Ingest</div>
+          <h3 class="pipe-title">Watch → Supabase, every five minutes.</h3>
+          <p class="pipe-text">
+            The Apple Watch writes heart rate, HRV, sleep, and motion into HealthKit. Health Auto Export
+            packages them into a JSON batch and pushes it to a Workato webhook. Recipe 1 normalises the
+            metric name and upserts every sample into <span class="ft-mono">healthlog</span> with the
+            original timestamp — no aggregation, no editorialising.
+          </p>
+          <div class="pipe-meta">
+            <span class="mt">Trigger</span><span class="mv">HTTP webhook · ~5 min cadence</span>
+            <span class="mt">Writes</span><span class="mv"><span class="ft-mono">healthlog</span> (Supabase / PostgREST)</span>
+            <span class="mt">Recipe</span><span class="mv">01 · ripple_ingest_webhook</span>
+          </div>
+        </div>
+      </li>
+
+      <li class="pipe-entry pipe-entry--think" data-reveal>
+        <div class="pipe-node">
+          <span class="pipe-node__n">02</span>
+          <span class="pipe-node__pulse"></span>
+        </div>
+        <div class="pipe-body">
+          <div class="pipe-kicker">Think <span class="pipe-kicker__dot">·</span> Daily watchdog</div>
+          <h3 class="pipe-title">Once a day, a slow look across everything.</h3>
+          <p class="pipe-text">
+            Every twenty-four hours Recipe 6 recomputes each metric's seven-day mean against its
+            thirty-day baseline and refreshes the <span class="ft-mono">baseline</span> view. When enough
+            metrics drift in the same direction it writes an <span class="ft-mono">intervention</span> row
+            with a risk level (1–3) and an AI-generated summary — the same row any MCP client can read back
+            via <span class="ft-mono">get_recent_anomaly_log</span>.
+          </p>
+          <div class="pipe-meta">
+            <span class="mt">Trigger</span><span class="mv">cron · 24 h</span>
+            <span class="mt">Reads</span><span class="mv"><span class="ft-mono">healthlog</span> (30 d)</span>
+            <span class="mt">Writes</span><span class="mv"><span class="ft-mono">baseline</span> · <span class="ft-mono">intervention</span></span>
+            <span class="mt">Recipe</span><span class="mv">06 · ripple_anomaly_watchdog</span>
+          </div>
+        </div>
+      </li>
+
+      <li class="pipe-entry pipe-entry--tools" data-reveal>
+        <div class="pipe-node">
+          <span class="pipe-node__n">03</span>
+          <span class="pipe-node__pulse"></span>
+        </div>
+        <div class="pipe-body">
+          <span class="pipe-badge">MCP</span>
+          <div class="pipe-kicker">Tools <span class="pipe-kicker__dot">·</span> Workato as an MCP server</div>
+          <h3 class="pipe-title">Workato exposes itself. Kimi dials in.</h3>
+          <p class="pipe-text">
+            This is the part that makes Ripple an <em>agent</em> and not just a webhook fan-out.
+            Four Workato recipes are published as <span class="ft-mono">Model Context Protocol</span> tools —
+            including <span class="ft-mono">get_current_vitals</span> and
+            <span class="ft-mono">get_baseline_deviation</span>. When the user asks "how's my heart rate"
+            mid-chat, Kimi does not hallucinate from its system prompt — it issues an MCP tool call,
+            Workato runs the corresponding recipe (reads Supabase, shapes the payload), and Kimi returns a
+            grounded answer inside the same turn.
+          </p>
+          <p class="pipe-text">
+            The Chat tab and the MCP agent hit the <em>same</em> recipes. No shadow SQL, no duplicated
+            prompts, no drift between "what the human chat shows" and "what the agent acts on." Workato is
+            simultaneously the orchestrator <em>and</em> the tool surface.
+          </p>
+          <div class="pipe-meta">
+            <span class="mt">Protocol</span><span class="mv">Model Context Protocol (MCP)</span>
+            <span class="mt">Server</span><span class="mv">Workato MCP endpoint</span>
+            <span class="mt">Client</span><span class="mv">Kimi <span class="ft-mono">moonshot-v1-8k</span> · any MCP-compatible agent</span>
+            <span class="mt">Tools</span><span class="mv"><span class="ft-mono">get_current_vitals</span> · <span class="ft-mono">get_baseline_deviation</span></span>
+            <span class="mt">Recipes</span><span class="mv">02–03 · ripple_mcp_*</span>
+          </div>
+
+          <!-- MCP connect block — copy-paste into any MCP client -->
+          <div class="mcp-connect" data-reveal>
+            <div class="mcp-connect__head">
+              <span class="pipe-badge pipe-badge--outline">Connect</span>
+              <h4 class="mcp-connect__title">Wire it into any MCP client.</h4>
+              <p class="mcp-connect__lead">
+                Because Workato speaks MCP, the <em>same</em> four tools light up in every
+                MCP-compatible agent — Claude Desktop, Claude Code, Codex CLI, Cursor,
+                Continue, MCP Inspector. Pick your client, paste the config, restart the
+                client, and <span class="ft-mono">ripple-wellness</span> appears in your
+                tool list.
+              </p>
+
+              <div class="mcp-endpoint">
+                <span class="mcp-endpoint__lbl">Endpoint</span>
+                <code class="mcp-endpoint__url" id="mcpEndpoint">https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb</code>
+                <button class="mcp-copy" data-mcp-copy="#mcpEndpoint" aria-label="Copy endpoint">
+                  <span class="mcp-copy__icon">⎘</span><span class="mcp-copy__txt">Copy</span>
+                </button>
+              </div>
+              <p class="mcp-endpoint__note">
+                Transport: <span class="ft-mono">mcp-remote</span> → HTTPS. Get your own
+                <span class="ft-mono">wkt_token</span> from Workato Automation → MCP Servers.
+              </p>
+            </div>
+
+            <div class="mcp-tabs" role="tablist">
+              <button class="mcp-tab is-active" role="tab" data-mcp-tab="oneliner" aria-selected="true">One-liner</button>
+              <button class="mcp-tab" role="tab" data-mcp-tab="desktop" aria-selected="false">Claude Desktop</button>
+              <button class="mcp-tab" role="tab" data-mcp-tab="code" aria-selected="false">Claude Code</button>
+              <button class="mcp-tab" role="tab" data-mcp-tab="codex" aria-selected="false">Codex CLI</button>
+              <button class="mcp-tab" role="tab" data-mcp-tab="cursor" aria-selected="false">Cursor</button>
+              <button class="mcp-tab" role="tab" data-mcp-tab="http" aria-selected="false">Raw HTTP</button>
+            </div>
+
+            <div class="mcp-panels">
+              <div class="mcp-panel is-active" data-mcp-panel="oneliner" role="tabpanel">
+                <div class="mcp-panel__hint">
+                  Three shell-ready commands that install <span class="ft-mono">ripple-wellness</span> on any machine. Pick the one that matches your client, paste, done. No manual JSON editing.
+                </div>
+
+                <div class="mcp-oneliner__group">
+                  <div class="mcp-oneliner__lbl">Claude Code — any terminal</div>
+                  <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>claude mcp add ripple-wellness --transport stdio -- npx -y mcp-remote "https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb"</code></pre>
+                </div>
+
+                <div class="mcp-oneliner__group">
+                  <div class="mcp-oneliner__lbl">Codex CLI — appends to <span class="ft-mono">~/.codex/config.toml</span></div>
+                  <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>cat &gt;&gt; ~/.codex/config.toml &lt;&lt;'EOF'
+
+[mcp_servers.ripple-wellness]
+command = "npx"
+args = ["-y", "mcp-remote", "https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb"]
+EOF</code></pre>
+                </div>
+
+                <div class="mcp-oneliner__group">
+                  <div class="mcp-oneliner__lbl">Claude Desktop — Python merges the JSON safely</div>
+                  <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>python3 &lt;&lt;'EOF'
+import json, pathlib
+p = pathlib.Path.home() / "Library/Application Support/Claude/claude_desktop_config.json"
+cfg = json.loads(p.read_text()) if p.exists() else {}
+cfg.setdefault("mcpServers", {})["ripple-wellness"] = {
+    "command": "npx",
+    "args": ["-y", "mcp-remote",
+             "https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb"]
+}
+p.write_text(json.dumps(cfg, indent=2))
+print("Installed. Restart Claude Desktop.")
+EOF</code></pre>
+                </div>
+
+                <div class="mcp-panel__after">
+                  After install, run <span class="ft-mono">/mcp</span> (Claude Code) or click the 🔌 menu (Desktop) — <span class="ft-mono">ripple-wellness</span> shows up with <span class="ft-mono">get_current_vitals</span> + <span class="ft-mono">get_baseline_deviation</span> ready to call.
+                </div>
+              </div>
+
+              <div class="mcp-panel" data-mcp-panel="desktop" role="tabpanel" hidden>
+                <div class="mcp-panel__hint">
+                  File: <span class="ft-mono">~/Library/Application Support/Claude/claude_desktop_config.json</span>
+                </div>
+                <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>{
+  "mcpServers": {
+    "ripple-wellness": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb"
+      ]
+    }
+  }
+}</code></pre>
+                <div class="mcp-panel__after">Restart Claude Desktop. The <span class="ft-mono">ripple-wellness</span> server shows up in the 🔌 menu.</div>
+              </div>
+
+              <div class="mcp-panel" data-mcp-panel="code" role="tabpanel" hidden>
+                <div class="mcp-panel__hint">Run in any terminal with Claude Code installed:</div>
+                <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>claude mcp add ripple-wellness \
+  --transport stdio \
+  -- npx -y mcp-remote \
+  "https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb"</code></pre>
+                <div class="mcp-panel__after">Then <span class="ft-mono">/mcp</span> inside Claude Code shows <span class="ft-mono">ripple-wellness</span> with four live tools.</div>
+              </div>
+
+              <div class="mcp-panel" data-mcp-panel="codex" role="tabpanel" hidden>
+                <div class="mcp-panel__hint">
+                  File: <span class="ft-mono">~/.codex/config.toml</span>
+                </div>
+                <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>[mcp_servers.ripple-wellness]
+command = "npx"
+args = [
+  "-y",
+  "mcp-remote",
+  "https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb"
+]</code></pre>
+                <div class="mcp-panel__after">Next <span class="ft-mono">codex</span> run auto-mounts the tools; they appear with the <span class="ft-mono">ripple-wellness__</span> prefix.</div>
+              </div>
+
+              <div class="mcp-panel" data-mcp-panel="cursor" role="tabpanel" hidden>
+                <div class="mcp-panel__hint">
+                  File: <span class="ft-mono">~/.cursor/mcp.json</span> (global) or <span class="ft-mono">.cursor/mcp.json</span> (per project)
+                </div>
+                <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>{
+  "mcpServers": {
+    "ripple-wellness": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb"
+      ]
+    }
+  }
+}</code></pre>
+                <div class="mcp-panel__after">Cursor picks it up immediately via Settings → MCP.</div>
+              </div>
+
+              <div class="mcp-panel" data-mcp-panel="http" role="tabpanel" hidden>
+                <div class="mcp-panel__hint">No MCP client? Call the recipe directly over HTTP:</div>
+                <pre class="mcp-code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy snippet"><span class="mcp-copy__icon">⎘</span></button><code>curl -X POST \
+  "https://1720.apim.mcp.trial.workato.com/rpc?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb" \
+  -H 'content-type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "get_current_vitals",
+      "arguments": { "user_id": "tommychen030607" }
+    }
+  }'</code></pre>
+                <div class="mcp-panel__after">Same underlying Workato recipe, same Supabase read. Works from any runtime that speaks HTTPS.</div>
+              </div>
+            </div>
+
+            <ul class="mcp-tools">
+              <li>
+                <span class="mcp-tools__name ft-mono">get_current_vitals</span>
+                <span class="mcp-tools__desc">Latest HR / HRV / SpO₂ / sleep / steps for a given user, straight out of <span class="ft-mono">healthlog</span>. Input: <span class="ft-mono">{ user_id }</span>.</span>
+              </li>
+              <li>
+                <span class="mcp-tools__name ft-mono">get_baseline_deviation</span>
+                <span class="mcp-tools__desc">Percent drift of a metric against its 7-day / 30-day baseline. Returns direction + magnitude. Input: <span class="ft-mono">{ user_id, metric }</span>.</span>
+              </li>
+            </ul>
+
+            <!-- Try-it-live — calls the MCP endpoint via /api/mcp/call proxy -->
+            <div class="mcp-try" id="mcpTry">
+              <div class="mcp-try__head">
+                <span class="pipe-badge pipe-badge--live">Try it live</span>
+                <h4 class="mcp-try__title">Call a recipe right now, no config.</h4>
+                <p class="mcp-try__lead">
+                  Pick a tool, hit <span class="ft-mono">Call</span>, watch the JSON-RPC round trip
+                  hit Workato → Workato runs the recipe → recipe reads Supabase →
+                  response comes back. The same path Kimi uses, inspected live.
+                </p>
+              </div>
+
+              <div class="mcp-try__form">
+                <label class="mcp-try__field">
+                  <span class="mcp-try__lbl">Tool</span>
+                  <select id="mcpTryTool" class="mcp-try__input">
+                    <option value="get_current_vitals">get_current_vitals</option>
+                    <option value="get_baseline_deviation">get_baseline_deviation</option>
+                  </select>
+                </label>
+                <label class="mcp-try__field">
+                  <span class="mcp-try__lbl">user_id</span>
+                  <input id="mcpTryUser" class="mcp-try__input" type="text" value="tommychen030607">
+                </label>
+                <label class="mcp-try__field" id="mcpTryMetricField" hidden>
+                  <span class="mcp-try__lbl">metric</span>
+                  <input id="mcpTryMetric" class="mcp-try__input" type="text" value="heart_rate" placeholder="heart_rate / hrv_sdnn / spo2 / …">
+                </label>
+                <button class="mcp-try__run" id="mcpTryRun">
+                  <span class="mcp-try__run-txt">Call</span>
+                  <span class="mcp-try__run-spin" aria-hidden="true"></span>
+                </button>
+              </div>
+
+              <div class="mcp-try__out" id="mcpTryOut" hidden>
+                <div class="mcp-try__meta">
+                  <span class="mcp-try__kv"><span class="mt">Status</span><span class="mv" id="mcpTryStatus">—</span></span>
+                  <span class="mcp-try__kv"><span class="mt">Latency</span><span class="mv" id="mcpTryLatency">—</span></span>
+                  <span class="mcp-try__kv"><span class="mt">Recipe</span><span class="mv" id="mcpTryRecipe">—</span></span>
+                </div>
+                <pre class="mcp-code mcp-try__code"><button class="mcp-copy mcp-copy--corner" data-mcp-copy-sibling aria-label="Copy result"><span class="mcp-copy__icon">⎘</span></button><code id="mcpTryResult">—</code></pre>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </li>
+
+    </ol>
+  </section>
+</main>
+
+<script type="module" src="./shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chat — Ripple</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/colors_and_type.css?v=vermilion3">
+<link rel="stylesheet" href="./shared.css">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#f1ecdf">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ripple">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg">
+<link rel="icon" type="image/svg+xml" href="/icons/ripple-icon.svg">
+</head>
+<body class="chat-body">
+
+<div class="rail rail--left"><span>RIPPLE // WELLNESS · WORKATO-ORCHESTRATED · SINGAPORE ——</span></div>
+<div class="rail rail--right"><span>NAISC 2026 / SENSE · THINK · ACT · CONVERSE</span></div>
+<div class="rail rail--bottom"><span class="url">RIPPLE — WELLNESS AGENT / 2026</span></div>
+
+<header>
+  <div class="nav">
+    <a href="/" data-path="/"><span class="n">00</span> Index</a>
+    <a href="/timeline" data-path="/timeline"><span class="n">01</span> Timeline</a>
+    <a href="/pipeline" data-path="/pipeline"><span class="n">02</span> Pipeline</a>
+    <a href="/chat" data-path="/chat"><span class="n">03</span> Chat</a>
+  </div>
+</header>
+
+<main class="chat-main chat-workspace" id="chatWorkspace">
+
+  <!-- ============== LEFT · VITALS ASIDE ============== -->
+  <aside class="chat-workspace__aside" id="chatVitals" data-open="true">
+    <div class="chat-vitals__head">
+      <div class="chat-vitals__title-wrap">
+        <span class="chat-vitals__eyebrow">// LIVE VITALS</span>
+        <h2 class="chat-vitals__title">Nine signals.<br><em>One calm read.</em></h2>
+      </div>
+      <div class="chat-vitals__source-line">
+        <span>via Workato MCP</span>
+        <span class="chat-vitals__sep">·</span>
+        <span class="ft-mono">get_current_vitals</span>
+      </div>
+    </div>
+
+    <div class="chat-vitals__bar">
+      <span class="chat-vitals__meta">
+        <span class="chat-vitals__lbl">Fetched</span>
+        <span class="chat-vitals__v" id="chatVitalsFetchedAt">—</span>
+      </span>
+      <span class="chat-vitals__meta">
+        <span class="chat-vitals__lbl">Latency</span>
+        <span class="chat-vitals__v" id="chatVitalsLatency">—</span>
+      </span>
+      <span class="chat-vitals__spacer"></span>
+      <button class="chat-vitals__refresh" id="chatVitalsRefresh" type="button" title="Re-fetch now">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+      </button>
+      <button class="chat-vitals__analyze" id="chatVitalsAnalyze" type="button" disabled>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        <span>AI analyze</span>
+      </button>
+    </div>
+
+    <div class="chat-vitals__grid-wrap">
+      <div class="chat-vitals__grid" id="chatVitalsRows">
+        <div class="chat-vitals__empty">Loading — calling Workato MCP…</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============== RIGHT · CHAT MAIN ============== -->
+  <section class="chat-workspace__main">
+    <!-- Top meta row -->
+    <div class="chat-meta">
+      <div class="chat-meta-left">
+        <div class="chat-avatar">R</div>
+        <div>
+          <div class="chat-title">Ripple</div>
+          <div class="chat-sub">Kimi moonshot-v1-8k · reads the left panel · proactive every 5 min</div>
+        </div>
+      </div>
+      <div class="chat-meta-right">
+        <span class="chat-status" id="nudgeStatus">
+          <span class="dot"></span>
+          <span class="txt">standing by</span>
+        </span>
+        <button class="chat-push" id="chatPushBtn" type="button" aria-label="Enable push notifications" hidden>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="chat-push__txt">enable push</span>
+        </button>
+        <div class="chat-clear" id="chatClearHost">
+          <button class="chat-clear__btn" id="chatClearBtn" type="button" aria-label="Clear conversation">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            <span>clear</span>
+          </button>
+          <div class="chat-clear__confirm" id="chatClearConfirm" hidden>
+            <span class="chat-clear__q">delete all messages?</span>
+            <button class="chat-clear__yes" id="chatClearYes" type="button">yes, clear</button>
+            <button class="chat-clear__no"  id="chatClearNo"  type="button">cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable log -->
+    <div class="chat-stream" id="chatLog">
+    <!-- Day divider -->
+    <div class="day-divider" id="dayDivider"><span></span></div>
+
+    <!-- Seed: initial system context + opener (inserted on first load) -->
+    <div class="msg msg--system">
+      <div class="msg-head">
+        <span class="kind">event</span>
+        <span class="time" data-time="--">—</span>
+      </div>
+      <div class="msg-body">Heart rate spike detected · 178 bpm · 6 min ago. The watchdog opened this conversation.</div>
+    </div>
+
+    <div class="msg msg--agent">
+      <div class="msg-avatar">R</div>
+      <div class="msg-body-wrap">
+        <div class="msg-head">
+          <span class="who">Ripple</span>
+          <span class="time" data-time="auto">just now</span>
+        </div>
+        <div class="msg-body">Hey — your watch just flagged a spike. Are you OK? What's going on?</div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Input dock -->
+    <div class="chat-dock">
+      <div class="chat-dock-inner">
+        <textarea id="chatInput" rows="1" placeholder="Reply to Ripple — try: gaming · chest pain · idk · stop"></textarea>
+        <button class="chat-send" id="chatSend" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="chat-hint">Enter to send · Shift+Enter for newline · Ripple reads the vitals panel before responding</div>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="./shared.js"></script>
+</body>
+</html>

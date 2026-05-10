@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Demo — Ripple</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/colors_and_type.css?v=vermilion3">
+<link rel="stylesheet" href="./shared.css">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#f1ecdf">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ripple Demo">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg">
+<link rel="icon" type="image/svg+xml" href="/icons/ripple-icon.svg">
+
+<style>
+  /* ========== Demo-specific styles (sit on top of shared.css tokens) ========== */
+  body { background: var(--y-bg); }
+
+  .demo-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 100px 40px 60px;
+    min-height: 100vh;
+  }
+
+  .demo-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+    margin-bottom: 38px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--y-line-strong);
+  }
+  .demo-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--y-accent);
+    margin-bottom: 14px;
+  }
+  .demo-h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(40px, 5.8vw, 76px);
+    font-weight: 500;
+    line-height: 0.96;
+    letter-spacing: -0.028em;
+    color: var(--y-fg);
+    margin: 0;
+  }
+  .demo-h1 em { font-style: italic; color: var(--y-accent); font-weight: 500; }
+  .demo-stamp {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--y-fg-muted);
+    line-height: 1.9;
+    text-align: right;
+  }
+  .demo-stamp b { color: var(--y-fg); font-weight: 500; }
+  .demo-stamp .live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #3a7a3a;
+    margin-right: 8px;
+    vertical-align: 1px;
+    animation: pulse-soft 1.6s ease-in-out infinite;
+  }
+
+  /* Two-column body */
+  .demo-body {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 36px;
+  }
+  @media (max-width: 880px) {
+    .demo-body { grid-template-columns: 1fr; }
+    .demo-wrap { padding: 80px 18px 40px; }
+  }
+
+  /* Column header bar */
+  .col-bar {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--y-fg-muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .col-bar::before {
+    content: '';
+    display: inline-block;
+    width: 22px;
+    height: 1px;
+    background: var(--y-accent);
+  }
+
+  /* ========== Notification card ========== */
+  .notif {
+    background: var(--y-fg);
+    color: var(--y-bg);
+    padding: 18px 22px;
+    border-radius: 8px;
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 460ms cubic-bezier(0.22,1,0.36,1), transform 460ms cubic-bezier(0.22,1,0.36,1);
+  }
+  .notif.in { opacity: 1; transform: translateY(0); }
+  .notif .glyph {
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    background: var(--y-accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 16px; font-weight: 700;
+    color: var(--y-bg);
+  }
+  .notif .body {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .notif .body .h {
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin-bottom: 3px;
+  }
+  .notif .body .sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: rgba(241,236,223,0.62);
+    letter-spacing: 0.04em;
+  }
+  .notif .ts {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: rgba(241,236,223,0.5);
+    text-transform: uppercase;
+  }
+
+  /* ========== Agent thinking stream ========== */
+  .think-block {
+    margin-bottom: 18px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 480ms cubic-bezier(0.22,1,0.36,1), transform 480ms cubic-bezier(0.22,1,0.36,1);
+  }
+  .think-block.in { opacity: 1; transform: translateY(0); }
+
+  .think-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--y-accent);
+    margin-bottom: 8px;
+  }
+  .think-text {
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--y-fg);
+  }
+  .think-text .cursor {
+    display: inline-block;
+    width: 7px;
+    height: 16px;
+    background: var(--y-accent);
+    margin-left: 2px;
+    transform: translateY(2px);
+    animation: blink 0.9s infinite;
+  }
+  .think-text .cursor.done { display: none; }
+  .think-text .em { color: var(--y-accent); font-weight: 500; }
+
+  /* User reply pill */
+  .user-reply {
+    background: var(--y-surface-strong);
+    border-left: 3px solid var(--y-accent);
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    border-radius: 0 6px 6px 0;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 460ms, transform 460ms;
+  }
+  .user-reply.in { opacity: 1; transform: translateY(0); }
+  .user-reply .lbl {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--y-fg-muted);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .user-reply .mic {
+    width: 12px; height: 12px; border-radius: 999px;
+    background: var(--y-accent);
+    animation: pulse-soft 1.4s infinite;
+    flex-shrink: 0;
+  }
+  .user-reply .text {
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--y-fg);
+    font-style: italic;
+  }
+
+  /* Final answer */
+  .final-answer {
+    background: var(--y-fg);
+    color: var(--y-bg);
+    padding: 22px 24px;
+    border-radius: 10px;
+    margin-top: 6px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 520ms, transform 520ms;
+  }
+  .final-answer.in { opacity: 1; transform: translateY(0); }
+  .final-answer .lbl {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--y-accent-soft);
+    margin-bottom: 10px;
+  }
+  .final-answer .text {
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .final-answer .text strong { color: var(--y-accent-soft); font-weight: 600; }
+
+  /* ========== Component cards (right column) ========== */
+  .components {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .comp-card {
+    border: 1px solid var(--y-line);
+    border-left: 3px solid var(--y-line);
+    border-radius: 6px;
+    background: var(--y-surface-strong);
+    padding: 14px 16px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 480ms cubic-bezier(0.22,1,0.36,1),
+                transform 480ms cubic-bezier(0.22,1,0.36,1),
+                border-left-color 280ms;
+  }
+  .comp-card.in { opacity: 1; transform: translateY(0); }
+  .comp-card.ok    { border-left-color: #3a7a3a; }
+  .comp-card.no    { border-left-color: var(--y-accent); }
+  .comp-card.warn  { border-left-color: #b38947; }
+
+  .comp-card .head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .comp-card .head .name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--y-fg);
+    letter-spacing: -0.005em;
+  }
+  .comp-card .head .meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--y-fg-muted);
+    margin-left: auto;
+    letter-spacing: 0.04em;
+  }
+  .comp-card .status {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--y-fg-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .comp-card.ok .status   { color: #3a7a3a; }
+  .comp-card.no .status   { color: var(--y-accent); }
+  .comp-card.warn .status { color: #b38947; }
+
+  .spinner {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border: 1.5px solid var(--y-line-strong);
+    border-top-color: var(--y-accent);
+    border-radius: 999px;
+    animation: spin 0.8s linear infinite;
+  }
+  .check {
+    display: inline-block;
+    width: 12px; height: 12px;
+    text-align: center;
+    line-height: 12px;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .comp-card.ok .check { color: #3a7a3a; }
+  .comp-card.no .check { color: var(--y-accent); }
+
+  .comp-card .body {
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--y-fg-muted);
+    margin-bottom: 6px;
+  }
+  .comp-card .body code {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--y-fg);
+    background: rgba(26,26,26,0.04);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* mini sparkline / map dot visuals */
+  .viz {
+    margin-top: 10px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+  }
+  .viz svg { width: 100%; height: 100%; display: block; }
+
+  /* Live HR widget at top of components column */
+  .hr-widget {
+    background: var(--y-fg);
+    color: var(--y-bg);
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+  .hr-widget .glyph {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 32px;
+    color: var(--y-accent-soft);
+    line-height: 1;
+  }
+  .hr-widget .num {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .hr-widget .num .v {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--y-bg);
+    letter-spacing: -0.02em;
+  }
+  .hr-widget .num .u {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: rgba(241,236,223,0.6);
+    text-transform: uppercase;
+  }
+  .hr-widget .delta {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--y-accent-soft);
+    text-align: right;
+    line-height: 1.5;
+  }
+  .hr-widget .delta b { display: block; color: var(--y-bg); font-weight: 600; }
+
+  /* ========== Footer status bar ========== */
+  .demo-foot {
+    margin-top: 56px;
+    padding-top: 18px;
+    border-top: 1px solid var(--y-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--y-fg-muted);
+  }
+  .demo-foot .stage { color: var(--y-accent); }
+  .demo-foot .keys b { color: var(--y-fg); font-weight: 500; }
+
+  /* Animations */
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sticky rails (matches other ripple pages) -->
+<div class="rail rail--left"><span>RIPPLE // WELLNESS · WORKATO-ORCHESTRATED · SINGAPORE ——</span></div>
+<div class="rail rail--right"><span>NAISC 2026 / SENSE · THINK · ACT · CONVERSE</span></div>
+<div class="rail rail--bottom"><span class="url">RIPPLE — DEMO / NAISC 2026 / 22 MAY</span></div>
+
+<!-- Sticky nav -->
+<header>
+  <div class="nav">
+    <a href="/" data-path="/"><span class="n">00</span> Index</a>
+    <a href="/timeline" data-path="/timeline"><span class="n">01</span> Timeline</a>
+    <a href="/pipeline" data-path="/pipeline"><span class="n">02</span> Pipeline</a>
+    <a href="/chat" data-path="/chat"><span class="n">03</span> Chat</a>
+    <a href="/demo" data-path="/demo" class="active"><span class="n">04</span> Demo</a>
+  </div>
+</header>
+
+<main class="demo-wrap">
+
+  <!-- Header -->
+  <div class="demo-head">
+    <div>
+      <div class="demo-eyebrow">// LIVE DEMO  ·  04  ·  Running disambiguation</div>
+      <h1 class="demo-h1">The body <em>spoke</em>.<br>The agent <em>listened</em>.</h1>
+    </div>
+    <div class="demo-stamp">
+      <div><span class="live-dot"></span><b>Live · monitoring</b></div>
+      <div><b>Subject</b> · gengyue081</div>
+      <div><b>Source</b> · Apple Watch · HAE · Workato</div>
+    </div>
+  </div>
+
+  <!-- Two-column body -->
+  <div class="demo-body">
+
+    <!-- LEFT · Agent thinking stream -->
+    <section>
+      <div class="col-bar">// Agent reasoning stream</div>
+
+      <!-- Stage 1: notification -->
+      <div class="notif" id="notif">
+        <div class="glyph">!</div>
+        <div class="body">
+          <div class="h">Anomaly detected — heart rate <strong>158 bpm</strong></div>
+          <div class="sub">1.8 σ above your 30-day baseline · motion high · <code style="color:var(--y-accent-soft);background:transparent;font-family:var(--mono);">live</code></div>
+        </div>
+        <div class="ts" id="notifTs">14:32:08</div>
+      </div>
+
+      <!-- Stage 2: agent investigates -->
+      <div class="think-block" id="think1">
+        <div class="think-tag">Agent · investigating</div>
+        <div class="think-text" id="think1Text"></div>
+      </div>
+
+      <!-- Stage 4: disambiguation prompt -->
+      <div class="think-block" id="think2">
+        <div class="think-tag">Agent · disambiguation</div>
+        <div class="think-text" id="think2Text"></div>
+      </div>
+
+      <!-- Stage 5: user reply -->
+      <div class="user-reply" id="userReply">
+        <div class="lbl"><span class="mic"></span>You · voice reply  ·  14:32:31</div>
+        <div class="text" id="userReplyText">"Yeah, I'm doing burpees in my room"</div>
+      </div>
+
+      <!-- Stage 6: final response -->
+      <div class="final-answer" id="finalAnswer">
+        <div class="lbl">Ripple agent · response</div>
+        <div class="text" id="finalText"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT · Live widgets + tool-call cards -->
+    <section>
+      <div class="col-bar">// Live signals  ·  tool calls</div>
+
+      <!-- Live HR widget (always visible from stage 0) -->
+      <div class="hr-widget">
+        <div class="glyph">♥</div>
+        <div class="num">
+          <span class="v" id="hrValue">158</span>
+          <span class="u">bpm</span>
+        </div>
+        <div class="delta">
+          <b>+38 bpm</b>
+          vs baseline
+        </div>
+      </div>
+
+      <div class="components">
+
+        <!-- Tool 1: Apple Watch motion -->
+        <div class="comp-card" id="comp1">
+          <div class="head">
+            <span class="name">apple_watch.motion_sensor</span>
+            <span class="meta">120 ms</span>
+          </div>
+          <div class="body" id="comp1Body">checking accelerometer / arm-swing pattern…</div>
+          <div class="status" id="comp1Status"><span class="spinner"></span> querying</div>
+          <div class="viz" id="comp1Viz"></div>
+        </div>
+
+        <!-- Tool 2: GPS -->
+        <div class="comp-card" id="comp2">
+          <div class="head">
+            <span class="name">iphone.gps_coordinates</span>
+            <span class="meta">88 ms</span>
+          </div>
+          <div class="body" id="comp2Body">fetching location trail (last 4 min)…</div>
+          <div class="status" id="comp2Status"><span class="spinner"></span> querying</div>
+          <div class="viz" id="comp2Viz"></div>
+        </div>
+
+        <!-- Tool 3: Discord presence -->
+        <div class="comp-card" id="comp3">
+          <div class="head">
+            <span class="name">discord.presence</span>
+            <span class="meta">142 ms</span>
+          </div>
+          <div class="body" id="comp3Body">Lanyard WSS lookup…</div>
+          <div class="status" id="comp3Status"><span class="spinner"></span> querying</div>
+        </div>
+
+        <!-- Tool 4: Calendar -->
+        <div class="comp-card" id="comp4">
+          <div class="head">
+            <span class="name">calendar.events_today</span>
+            <span class="meta">96 ms</span>
+          </div>
+          <div class="body" id="comp4Body">checking scheduled activities…</div>
+          <div class="status" id="comp4Status"><span class="spinner"></span> querying</div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer status bar -->
+  <div class="demo-foot">
+    <div>Stage <span class="stage" id="stageLbl">0</span> / 6</div>
+    <div class="keys">
+      Press <b>Space</b> next  ·  <b>R</b> reset  ·  <b>F</b> fullscreen
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ========================================
+  //  Stage state machine
+  // ========================================
+  // 0  idle (HR widget visible only)
+  // 1  notification fires
+  // 2  agent thinking #1 streams + tool 1 (motion) appears + resolves OK
+  // 3  tool 2 (GPS) + tool 3 (Discord) + tool 4 (Calendar) appear + resolve
+  // 4  agent thinking #2 (disambiguation) streams
+  // 5  user voice reply appears
+  // 6  final agent response streams
+  // ========================================
+
+  const stages = {
+    notif:        document.getElementById('notif'),
+    think1:       document.getElementById('think1'),
+    think1Text:   document.getElementById('think1Text'),
+    comp1:        document.getElementById('comp1'),
+    comp1Body:    document.getElementById('comp1Body'),
+    comp1Status:  document.getElementById('comp1Status'),
+    comp1Viz:     document.getElementById('comp1Viz'),
+    comp2:        document.getElementById('comp2'),
+    comp2Body:    document.getElementById('comp2Body'),
+    comp2Status:  document.getElementById('comp2Status'),
+    comp2Viz:     document.getElementById('comp2Viz'),
+    comp3:        document.getElementById('comp3'),
+    comp3Body:    document.getElementById('comp3Body'),
+    comp3Status:  document.getElementById('comp3Status'),
+    comp4:        document.getElementById('comp4'),
+    comp4Body:    document.getElementById('comp4Body'),
+    comp4Status:  document.getElementById('comp4Status'),
+    think2:       document.getElementById('think2'),
+    think2Text:   document.getElementById('think2Text'),
+    userReply:    document.getElementById('userReply'),
+    finalAnswer:  document.getElementById('finalAnswer'),
+    finalText:    document.getElementById('finalText'),
+    stageLbl:     document.getElementById('stageLbl'),
+    hrValue:      document.getElementById('hrValue'),
+    notifTs:      document.getElementById('notifTs'),
+  };
+
+  let stage = 0;
+  let typing = false;     // lock advance while typewriter running
+  const totalStages = 6;
+
+  // Live HR jitter (always running, idle to active)
+  const hrBase = 158;
+  setInterval(() => {
+    const j = (Math.random() - 0.5) * 4;
+    stages.hrValue.textContent = Math.round(hrBase + j);
+  }, 800);
+
+  // Live timestamp on notification (so it always says "just now"-ish)
+  function nowStamp() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2,'0') + ':' +
+           String(d.getMinutes()).padStart(2,'0') + ':' +
+           String(d.getSeconds()).padStart(2,'0');
+  }
+
+  // ========================================
+  //  Typewriter
+  // ========================================
+  function typewrite(el, html, perChar = 22) {
+    return new Promise(resolve => {
+      typing = true;
+      el.innerHTML = '';
+      // we type plain-text, but allow <em> / <strong> markers via mini parser
+      // Simpler: type at character speed by walking the HTML token-by-token.
+      const tokens = parseTypewriterTokens(html);
+      let cursorEl = document.createElement('span');
+      cursorEl.className = 'cursor';
+      el.appendChild(cursorEl);
+
+      let i = 0;
+      const tick = () => {
+        if (i >= tokens.length) {
+          cursorEl.classList.add('done');
+          typing = false;
+          resolve();
+          return;
+        }
+        const t = tokens[i++];
+        if (t.type === 'open') {
+          const sp = document.createElement(t.tag);
+          if (t.cls) sp.className = t.cls;
+          el.insertBefore(sp, cursorEl);
+          // continue typing children inside this span
+          // We push a marker so subsequent text appends into sp
+          stack.push(sp);
+        } else if (t.type === 'close') {
+          stack.pop();
+        } else {
+          const target = stack.length ? stack[stack.length-1] : el;
+          target.insertBefore(document.createTextNode(t.text), null);
+          // move cursor to end of root for visual
+          el.appendChild(cursorEl);
+        }
+        setTimeout(tick, t.type === 'text' ? perChar : 0);
+      };
+      const stack = [];
+      tick();
+    });
+  }
+  // Tokens: 'open <em class=em>', 'close', 'text c'
+  function parseTypewriterTokens(html) {
+    const out = [];
+    const re = /<(\/?)(em|strong|code|span)(?:\s+class="([^"]*)")?>|([^<]+)/g;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      if (m[2]) {
+        out.push({type: m[1] === '/' ? 'close' : 'open', tag: m[2], cls: m[3] || null});
+      } else {
+        const txt = m[4];
+        for (const c of txt) out.push({type: 'text', text: c});
+      }
+    }
+    return out;
+  }
+
+  // ========================================
+  //  Stage actions
+  // ========================================
+  async function goStage(n) {
+    if (typing) return;
+    if (n < 0 || n > totalStages) return;
+    stage = n;
+    stages.stageLbl.textContent = stage;
+
+    if (n >= 1) {
+      stages.notif.classList.add('in');
+      stages.notifTs.textContent = nowStamp();
+    }
+    if (n >= 2) {
+      stages.think1.classList.add('in');
+      // start tool 1 immediately, resolve mid-typing
+      stages.comp1.classList.add('in');
+      setTimeout(() => resolveComp1(), 1200);
+      await typewrite(
+        stages.think1Text,
+        'Heart rate spiked sharply. Motion is high — could be a workout. <em class="em">Pulling four signals in parallel</em> to disambiguate.'
+      );
+    }
+    if (n >= 3) {
+      stages.comp2.classList.add('in');
+      setTimeout(() => resolveComp2(), 700);
+      stages.comp3.classList.add('in');
+      setTimeout(() => resolveComp3(), 1400);
+      stages.comp4.classList.add('in');
+      setTimeout(() => resolveComp4(), 2100);
+    }
+    if (n >= 4) {
+      stages.think2.classList.add('in');
+      await typewrite(
+        stages.think2Text,
+        'Motion suggests exercise, but <em class="em">your location has not changed in 4 minutes</em>. You\'re moving without going anywhere. Are you doing in-place training — burpees, HIIT, 做操?'
+      );
+    }
+    if (n >= 5) {
+      stages.userReply.classList.add('in');
+    }
+    if (n >= 6) {
+      stages.finalAnswer.classList.add('in');
+      await typewrite(
+        stages.finalText,
+        'Got it — logged as <strong>in-place HIIT</strong>, not a panic event. Your HR will return toward baseline in ~3 minutes; hydration recommended after. <em class="em">Pattern saved to your context store for next time.</em>'
+      );
+    }
+  }
+
+  // ========================================
+  //  Tool resolvers (each updates a comp-card)
+  // ========================================
+  function resolveComp1() {
+    stages.comp1.classList.add('ok');
+    stages.comp1Body.innerHTML = 'Strong arm-swing pattern · accel <code>0.62 g</code> peak · <strong style="color:#3a7a3a">consistent with workout</strong>';
+    stages.comp1Status.innerHTML = '<span class="check">✓</span> motion confirmed';
+    // tiny sparkline
+    stages.comp1Viz.innerHTML = sparkline([0.2,0.3,0.5,0.4,0.6,0.55,0.62,0.58,0.6,0.55,0.6,0.58], '#3a7a3a');
+  }
+  function resolveComp2() {
+    stages.comp2.classList.add('no');
+    stages.comp2Body.innerHTML = '<strong style="color:var(--y-accent)">No displacement</strong> · same coordinates for 4 min · likely indoor';
+    stages.comp2Status.innerHTML = '<span class="check">✗</span> location stationary';
+    stages.comp2Viz.innerHTML = mapDot('#c8472d');
+  }
+  function resolveComp3() {
+    stages.comp3.classList.add('no');
+    stages.comp3Body.innerHTML = 'Lanyard returned <code>status: idle</code> · <strong style="color:var(--y-accent)">not gaming</strong>';
+    stages.comp3Status.innerHTML = '<span class="check">✗</span> not gaming';
+  }
+  function resolveComp4() {
+    stages.comp4.classList.add('no');
+    stages.comp4Body.innerHTML = 'No event scheduled · <strong style="color:var(--y-accent)">not a planned workout</strong>';
+    stages.comp4Status.innerHTML = '<span class="check">✗</span> no calendar event';
+  }
+
+  // ========================================
+  //  Tiny SVG visual helpers
+  // ========================================
+  function sparkline(points, color) {
+    const max = Math.max(...points);
+    const min = Math.min(...points);
+    const w = 100, h = 36;
+    const stepX = w / (points.length - 1);
+    const path = points.map((p, i) => {
+      const x = i * stepX;
+      const y = h - ((p - min) / (max - min || 1)) * (h - 4) - 2;
+      return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <path d="${path}" stroke="${color}" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+  function mapDot(color) {
+    return `<svg viewBox="0 0 100 36" preserveAspectRatio="none">
+      <circle cx="50" cy="18" r="3" fill="${color}"/>
+      <circle cx="50" cy="18" r="9" fill="none" stroke="${color}" stroke-width="0.8" opacity="0.32"/>
+      <circle cx="50" cy="18" r="15" fill="none" stroke="${color}" stroke-width="0.6" opacity="0.18"/>
+      <text x="60" y="22" font-family="JetBrains Mono, monospace" font-size="8" fill="${color}" letter-spacing="0.06em">1.297, 103.847  ·  Δ 0 m</text>
+    </svg>`;
+  }
+
+  // ========================================
+  //  Reset
+  // ========================================
+  function reset() {
+    if (typing) return;
+    stage = 0;
+    stages.stageLbl.textContent = stage;
+    ['notif','think1','comp1','comp2','comp3','comp4','think2','userReply','finalAnswer'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('in', 'ok', 'no', 'warn');
+    });
+    stages.think1Text.innerHTML = '';
+    stages.think2Text.innerHTML = '';
+    stages.finalText.innerHTML = '';
+    // restore comp-card placeholders
+    stages.comp1Body.innerHTML = 'checking accelerometer / arm-swing pattern…';
+    stages.comp1Status.innerHTML = '<span class="spinner"></span> querying';
+    stages.comp1Viz.innerHTML = '';
+    stages.comp2Body.innerHTML = 'fetching location trail (last 4 min)…';
+    stages.comp2Status.innerHTML = '<span class="spinner"></span> querying';
+    stages.comp2Viz.innerHTML = '';
+    stages.comp3Body.innerHTML = 'Lanyard WSS lookup…';
+    stages.comp3Status.innerHTML = '<span class="spinner"></span> querying';
+    stages.comp4Body.innerHTML = 'checking scheduled activities…';
+    stages.comp4Status.innerHTML = '<span class="spinner"></span> querying';
+  }
+
+  // ========================================
+  //  Keyboard / clicker
+  // ========================================
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'PageDown') {
+      e.preventDefault();
+      if (stage < totalStages) goStage(stage + 1);
+    } else if (e.code === 'ArrowLeft' || e.code === 'PageUp') {
+      e.preventDefault();
+      // simple back: just reset (going back inside type-effect is messy)
+    } else if (e.key === 'r' || e.key === 'R') {
+      reset();
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    } else if (/^[0-6]$/.test(e.key)) {
+      const n = Number(e.key);
+      if (n === 0) reset();
+      else { reset(); setTimeout(() => goStage(n), 60); }
+    }
+  });
+
+  // Tap-to-advance for mobile (when saved to home screen as PWA)
+  document.body.addEventListener('click', (e) => {
+    // ignore clicks on nav links
+    if (e.target.closest('a, header')) return;
+    if (stage < totalStages) goStage(stage + 1);
+  });
+
+</script>
+
+</body>
+</html>

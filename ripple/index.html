@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ripple — Wellness Agent · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/colors_and_type.css?v=vermilion3">
+<link rel="stylesheet" href="./shared.css">
+
+<style>
+  /* ===== Trailer section — NAISC 2026 film ===== */
+  .trailer {
+    position: relative;
+    padding: clamp(36px, 3.5vw, 60px) clamp(16px, 2vw, 40px) clamp(48px, 5vw, 80px);
+    max-width: 2200px;
+    margin: 0 auto;
+    color: #1a1a1a;
+    /* Override shared.css section defaults (display:flex / min-height:100vh
+       / overflow:hidden) that were squishing the 16:9 frame into a 623px
+       flex-item. */
+    display: block;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+  }
+
+  .trailer-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px 64px;
+    align-items: end;
+    margin-bottom: clamp(20px, 2vw, 32px);
+  }
+
+  @media (max-width: 900px) {
+    .trailer-head { grid-template-columns: 1fr; align-items: start; }
+  }
+
+  .trailer-kicker {
+    font-family: 'JetBrains Mono', 'Hack', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #c8472d;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .trailer-kicker::before {
+    content: '';
+    display: inline-block;
+    width: 28px;
+    height: 1px;
+    background: #c8472d;
+  }
+
+  .trailer-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(40px, 4.8vw, 72px);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.028em;
+    color: #1a1a1a;
+    margin: 0 0 8px;
+  }
+
+  .trailer-title em {
+    font-style: italic;
+    color: #c8472d;
+  }
+
+  .trailer-sub {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: clamp(15px, 1.3vw, 18px);
+    font-weight: 400;
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.64);
+    max-width: 480px;
+    margin: 0;
+  }
+
+  .trailer-side {
+    font-family: 'JetBrains Mono', 'Hack', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.42);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .trailer-side b {
+    color: rgba(26, 26, 26, 0.72);
+    font-weight: 500;
+  }
+
+  /* Monitor-style video frame — let the inner .trailer-player drive height
+     from its own 16:9 aspect-ratio. Frame width is capped so that 16:9 of
+     that width fits inside the visible viewport (minus chrome + head). */
+  .trailer-frame {
+    position: relative;
+    width: 100%;
+    max-width: calc((100vh - 260px) * 16 / 9);
+    margin: 0 auto;
+    border-radius: 14px;
+    background: #faf6ec;
+    border: 1px solid rgba(26, 26, 26, 0.14);
+    overflow: hidden;
+    box-shadow:
+      0 40px 90px -42px rgba(26, 26, 26, 0.48),
+      0 0 0 8px rgba(26, 26, 26, 0.025);
+    transition: transform 280ms cubic-bezier(0.2, 0.6, 0.2, 1), box-shadow 280ms ease;
+  }
+
+  .trailer-frame:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 40px 90px -40px rgba(26, 26, 26, 0.48),
+      0 0 0 8px rgba(200, 71, 45, 0.08);
+  }
+
+  .trailer-chrome {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    background: rgba(26, 26, 26, 0.035);
+    border-bottom: 1px solid rgba(26, 26, 26, 0.1);
+    font-family: 'JetBrains Mono', 'Hack', ui-monospace, monospace;
+    font-size: 12px;
+    color: #7a7266;
+    letter-spacing: 0.06em;
+  }
+
+  .trailer-chrome .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    background: rgba(26, 26, 26, 0.22);
+    flex-shrink: 0;
+  }
+  .trailer-chrome .dot.red   { background: #c8472d; }
+  .trailer-chrome .dot.amber { background: #b38947; }
+  .trailer-chrome .dot.green { background: #3a7a3a; }
+
+  .chrome-url {
+    margin-left: 14px;
+    flex: 1;
+    color: rgba(26, 26, 26, 0.56);
+    letter-spacing: 0.08em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chrome-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: #c8472d;
+    background: rgba(200, 71, 45, 0.1);
+    border: 1px solid rgba(200, 71, 45, 0.32);
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+
+  .chrome-badge::before {
+    content: '●';
+    margin-right: 6px;
+    animation: trailerPulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes trailerPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  /* 16:9 via padding-bottom hack — more robust than CSS aspect-ratio when
+     there's any nested flex/grid in the DOM tree. */
+  .trailer-player {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+    background: #1a1a1a;
+  }
+
+  .trailer-player iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* Meta row under frame */
+  .trailer-meta {
+    margin: 20px auto 0;
+    width: 100%;
+    max-width: calc((100vh - 260px) * 16 / 9);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', 'Hack', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.56);
+  }
+
+  .trailer-meta-chips {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .trailer-meta-chips span {
+    padding: 6px 12px;
+    border: 1px solid rgba(26, 26, 26, 0.14);
+    border-radius: 4px;
+  }
+
+  .trailer-meta a {
+    color: #c8472d;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(200, 71, 45, 0.3);
+    padding-bottom: 2px;
+    transition: border-color 200ms;
+  }
+
+  .trailer-meta a:hover {
+    border-bottom-color: #c8472d;
+  }
+
+  .trailer-meta a .arrow-ext {
+    transition: transform 200ms ease;
+  }
+
+  .trailer-meta a:hover .arrow-ext {
+    transform: translate(2px, -2px);
+  }
+
+  /* Thin bottom rule + scroll-down prompt */
+  .trailer-next {
+    margin-top: clamp(36px, 4vw, 56px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-family: 'JetBrains Mono', 'Hack', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.42);
+    text-decoration: none;
+  }
+
+  .trailer-next::before,
+  .trailer-next::after {
+    content: '';
+    flex: 1;
+    max-width: 140px;
+    height: 1px;
+    background: rgba(26, 26, 26, 0.18);
+  }
+
+  .trailer-next:hover { color: #c8472d; }
+</style>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#f1ecdf">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ripple">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg">
+<link rel="icon" type="image/svg+xml" href="/icons/ripple-icon.svg">
+</head>
+<body>
+
+<!-- Loader (only on entry page) -->
+<div class="loader" id="loader">
+  <div class="tag">BOOTING — 采集心跳中</div>
+  <div class="big">RIPPLE <em>AGENT</em></div>
+  <div class="bar"><i></i></div>
+  <div class="pct" id="pct">0%</div>
+</div>
+
+<!-- Fixed rails -->
+<div class="rail rail--left"><span>RIPPLE // WELLNESS · WORKATO-ORCHESTRATED · SINGAPORE ——</span></div>
+<div class="rail rail--right"><span>NAISC 2026 / SENSE · THINK · ACT · CONVERSE</span></div>
+<div class="rail rail--bottom"><span class="url">RIPPLE — WELLNESS AGENT / 2026</span></div>
+
+<!-- Sticky nav -->
+<header>
+  <div class="nav">
+    <a href="/" data-path="/"><span class="n">00</span> Index</a>
+    <a href="/timeline" data-path="/timeline"><span class="n">01</span> Timeline</a>
+    <a href="/pipeline" data-path="/pipeline"><span class="n">02</span> Pipeline</a>
+    <a href="/chat" data-path="/chat"><span class="n">03</span> Chat</a>
+  </div>
+</header>
+
+<main>
+  <section id="index" class="hero">
+    <div class="hero-top">
+      <div class="kicker"><span class="dot"></span>Live · Supabase + Workato + Kimi</div>
+      <div>NAISC 2026 — Sense · Think · Act · Converse // A wellness agent orchestrated by recipes</div>
+    </div>
+
+    <h1 class="hero-name" id="heroName">
+      <span class="line" data-txt="RIPPLE"></span>
+      <span class="line" data-txt="AGENT"></span>
+    </h1>
+
+    <div class="hero-meta">
+      <div class="col">
+        <h4>Profile / 简介</h4>
+        <p>Ripple is a real-time wellness companion. Workato recipes ingest Apple Watch vitals into Supabase, then re-expose them via MCP so Claude, Codex, and Cursor read the same governed spine. One source of truth for the human chat and for any AI agent.</p>
+      </div>
+      <div class="col cta-col">
+        <h4>Actions</h4>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/chat">Open chat →</a>
+          <a class="btn btn--ghost" href="/timeline">View timeline ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <a class="hero-scroll" href="#trailer"><span>Watch the film</span><div class="arrow"></div></a>
+  </section>
+
+  <!-- ===== Trailer · NAISC 2026 demo film ===== -->
+  <section id="trailer" class="trailer">
+    <div class="trailer-head">
+      <div>
+        <div class="trailer-kicker">04 — Film · NAISC 2026</div>
+        <h1 class="trailer-title">Watch the <em>film.</em></h1>
+        <p class="trailer-sub">Four minutes. The problem, the MCP surface, and the impact — from one patient to one nation.</p>
+      </div>
+      <div class="trailer-side">
+        <div><b>Runtime</b> · 4 min</div>
+        <div><b>Team</b> · Geng Yue · Tommy Chen · Liu Zicheng</div>
+        <div><b>Track</b> · Workato · NAISC 2026</div>
+      </div>
+    </div>
+
+    <div class="trailer-frame">
+      <div class="trailer-chrome">
+        <span class="dot red"></span>
+        <span class="dot amber"></span>
+        <span class="dot green"></span>
+        <span class="chrome-url">youtube.com/watch?v=NbFPHHf_jz8</span>
+        <span class="chrome-badge">LIVE</span>
+      </div>
+      <div class="trailer-player">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/NbFPHHf_jz8?rel=0&modestbranding=1"
+          title="Ripple — NAISC 2026 trailer"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="trailer-meta">
+      <div class="trailer-meta-chips">
+        <span>Problem</span>
+        <span>MCP Surface</span>
+        <span>Impact</span>
+      </div>
+      <a href="https://youtu.be/NbFPHHf_jz8" target="_blank" rel="noopener">
+        Watch on YouTube <span class="arrow-ext">↗</span>
+      </a>
+    </div>
+
+    <a class="trailer-next" href="/timeline">Next chapter · Timeline</a>
+  </section>
+</main>
+
+<script type="module" src="./shared.js"></script>
+</body>
+</html>

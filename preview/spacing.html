@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spacing, Radii & Shadows — Toffeemoon</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#fafaf7;font-family:var(--font-sans);color:var(--y-fg);}
+  .page{max-width:1280px;margin:0 auto;padding:48px 56px 72px;}
+  .pagehead{display:flex;justify-content:space-between;align-items:baseline;gap:24px;margin-bottom:40px;border-bottom:1px solid rgba(36,28,24,0.12);padding-bottom:24px;}
+  .pagehead h1{font-family:var(--font-display);font-weight:600;font-size:2.4rem;letter-spacing:-0.02em;margin:0;}
+  .pagehead p{color:var(--y-fg-muted);margin:0;max-width:46ch;font-size:0.95rem;line-height:1.6;}
+
+  .sec{margin-bottom:56px;}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:20px;}
+  .sec-head .eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y-fg-muted);}
+  .sec-head h2{font-family:var(--font-display);font-weight:600;font-size:1.6rem;margin:0;letter-spacing:-0.015em;}
+  .sec-head .bar{flex:1;height:1px;background:rgba(36,28,24,0.1);align-self:center;}
+
+  .space-grid{display:grid;grid-template-columns:100px 1fr 90px;gap:16px;align-items:center;padding:10px 20px;border:1px solid rgba(36,28,24,0.08);border-radius:14px;margin-bottom:8px;background:#fffaf4;}
+  .space-grid .tok{font-family:var(--font-mono);font-size:.75rem;color:var(--y-fg-muted);letter-spacing:.02em;}
+  .space-grid .bar{height:14px;background:linear-gradient(90deg,#b78356,#ead4bc);border-radius:999px;}
+  .space-grid .val{font-family:var(--font-mono);font-size:.75rem;color:var(--y-fg);text-align:right;letter-spacing:.02em;}
+
+  .radii{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
+  @media (max-width:900px){.radii{grid-template-columns:repeat(3,1fr);}}
+  .rad{background:#fffaf4;border:1px solid rgba(36,28,24,0.08);padding:18px;text-align:center;}
+  .rad .box{height:76px;background:linear-gradient(135deg,#ead4bc,#b78356);margin-bottom:12px;}
+  .rad .name{font-family:var(--font-display);font-weight:600;font-size:1.05rem;margin-bottom:2px;letter-spacing:-0.01em;}
+  .rad .tok{font-family:var(--font-mono);font-size:.7rem;color:var(--y-fg-muted);letter-spacing:.02em;}
+  .rad .val{font-family:var(--font-mono);font-size:.7rem;color:var(--y-fg-muted);letter-spacing:.02em;}
+
+  .shadows{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media (max-width:900px){.shadows{grid-template-columns:1fr;}}
+  .sh{border-radius:24px;padding:30px 28px 34px;background:#fffaf4;}
+  .sh-y-sm{box-shadow:var(--shadow-sm);}
+  .sh-y-md{box-shadow:var(--shadow-md);}
+  .sh-y-lg{box-shadow:var(--shadow-lg);}
+  .sh-c-green{background:#fff;box-shadow:0 10px 32px rgba(0,0,0,0.08),0 8px 22px rgba(22,163,74,0.14);border:1px solid #e5e5e5;}
+  .sh .name{font-family:var(--font-display);font-weight:600;font-size:1.15rem;margin:0 0 4px;letter-spacing:-0.01em;}
+  .sh .tok{font-family:var(--font-mono);font-size:.7rem;color:var(--y-fg-muted);letter-spacing:.02em;margin-bottom:10px;}
+  .sh .desc{font-family:var(--font-sans);font-size:.88rem;line-height:1.55;color:var(--y-fg-muted);margin:0;}
+
+  .sp-demo{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;}
+  @media (max-width:900px){.sp-demo{grid-template-columns:1fr;}}
+  .sp-demo .block{background:#fffaf4;border:1px solid rgba(36,28,24,0.08);border-radius:24px;padding:28px;}
+  .sp-demo .rule{height:1px;background:rgba(36,28,24,0.12);margin:16px 0;}
+  .sp-demo .meta{font-family:var(--font-mono);font-size:.72rem;color:var(--y-fg-muted);letter-spacing:.02em;}
+
+  .ease-row{display:grid;grid-template-columns:220px 1fr 140px;gap:16px;align-items:center;padding:14px 20px;border:1px solid rgba(36,28,24,0.08);border-radius:14px;margin-bottom:10px;background:#fffaf4;}
+  .ease-row .name{font-family:var(--font-display);font-weight:600;font-size:1rem;letter-spacing:-0.01em;}
+  .ease-row .tok{font-family:var(--font-mono);font-size:.7rem;color:var(--y-fg-muted);letter-spacing:.02em;margin-top:2px;}
+  .track{position:relative;height:44px;border-radius:999px;background:rgba(36,28,24,0.06);overflow:hidden;}
+  .dot{position:absolute;top:50%;left:0;width:24px;height:24px;border-radius:999px;background:var(--y-accent);transform:translate(-50%,-50%);animation-duration:2200ms;animation-iteration-count:infinite;animation-direction:alternate;}
+  .dot.expo{animation-name:slide;animation-timing-function:cubic-bezier(0.22, 1, 0.36, 1);}
+  .dot.soft{animation-name:slide;animation-timing-function:cubic-bezier(0.25, 0.46, 0.45, 0.94);}
+  @keyframes slide{from{left:0%;}to{left:100%;}}
+  .ease-row .val{font-family:var(--font-mono);font-size:.7rem;color:var(--y-fg-muted);text-align:right;letter-spacing:.02em;}
+
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="pagehead">
+    <h1>Spacing · Radii · Shadows · Motion</h1>
+    <p>The rhythm rules. A 4/8 base unit, two radii tiers (crisp for product, generous for editorial), soft warm shadows, and two timing curves.</p>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Scale</span><h2>Spacing</h2><span class="bar"></span></div>
+    <div class="space-grid"><span class="tok">--space-1</span><span class="bar" style="width:4px;"></span><span class="val">4px</span></div>
+    <div class="space-grid"><span class="tok">--space-2</span><span class="bar" style="width:8px;"></span><span class="val">8px</span></div>
+    <div class="space-grid"><span class="tok">--space-3</span><span class="bar" style="width:12px;"></span><span class="val">12px</span></div>
+    <div class="space-grid"><span class="tok">--space-4</span><span class="bar" style="width:16px;"></span><span class="val">16px</span></div>
+    <div class="space-grid"><span class="tok">--space-5</span><span class="bar" style="width:24px;"></span><span class="val">24px</span></div>
+    <div class="space-grid"><span class="tok">--space-6</span><span class="bar" style="width:32px;"></span><span class="val">32px</span></div>
+    <div class="space-grid"><span class="tok">--space-7</span><span class="bar" style="width:48px;"></span><span class="val">48px</span></div>
+    <div class="space-grid"><span class="tok">--space-8</span><span class="bar" style="width:64px;"></span><span class="val">64px</span></div>
+    <div class="space-grid"><span class="tok">--space-9</span><span class="bar" style="width:96px;"></span><span class="val">96px — section pad</span></div>
+
+    <div class="sp-demo">
+      <div class="block" style="padding:40px;">
+        <div class="meta">Yuqin card · 40px padding</div>
+        <div class="rule"></div>
+        <div style="font-family:var(--font-display);font-weight:600;font-size:1.35rem;letter-spacing:-0.01em;">Storied Capsule</div>
+        <p style="margin:8px 0 0;color:var(--y-fg-muted);font-size:.92rem;line-height:1.65;">Cards breathe. Generous padding is the single biggest visual signature of the portfolio.</p>
+      </div>
+      <div class="block" style="padding:24px;">
+        <div class="meta">CommenHers card · 24px padding</div>
+        <div class="rule"></div>
+        <div style="font-family:var(--font-geist),var(--font-sans);font-weight:500;font-size:1.25rem;letter-spacing:-0.01em;">Continuum Daypack</div>
+        <p style="margin:8px 0 0;color:#737373;font-size:.92rem;line-height:1.6;">Tighter padding. Product density wins — every card fits three lines of spec below the image.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Corners</span><h2>Radii</h2><span class="bar"></span></div>
+    <div class="radii">
+      <div class="rad"><div class="box" style="border-radius:8px;"></div><div class="name">sm</div><div class="tok">--radius-sm</div><div class="val">8px</div></div>
+      <div class="rad"><div class="box" style="border-radius:16px;"></div><div class="name">md</div><div class="tok">--radius-md</div><div class="val">16px</div></div>
+      <div class="rad"><div class="box" style="border-radius:24px;"></div><div class="name">lg</div><div class="tok">--radius-lg</div><div class="val">24px</div></div>
+      <div class="rad"><div class="box" style="border-radius:32px;"></div><div class="name">xl</div><div class="tok">--radius-xl</div><div class="val">32px</div></div>
+      <div class="rad"><div class="box" style="border-radius:40px;"></div><div class="name">2xl</div><div class="tok">--radius-2xl</div><div class="val">40px</div></div>
+      <div class="rad"><div class="box" style="border-radius:999px;"></div><div class="name">pill</div><div class="tok">--radius-pill</div><div class="val">999px</div></div>
+    </div>
+    <p style="color:var(--y-fg-muted);font-size:.88rem;margin-top:14px;line-height:1.6;">Use <b>32–40px</b> for Yuqin cards/panels (editorial feel), <b>12–24px</b> for CommenHers cards, <b>pill</b> for buttons and tag chips on both.</p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Depth</span><h2>Shadows</h2><span class="bar"></span></div>
+    <div class="shadows">
+      <div class="sh sh-y-sm"><div class="name">Resting</div><div class="tok">--shadow-sm</div><p class="desc">Cards at rest, lifted slightly from the cream page. Warm brown cast, never neutral gray.</p></div>
+      <div class="sh sh-y-md"><div class="name">Hover</div><div class="tok">--shadow-md</div><p class="desc">One tier up on hover or when active. Paired with a 1px translate-Y lift.</p></div>
+      <div class="sh sh-y-lg"><div class="name">Hero / panel</div><div class="tok">--shadow-lg</div><p class="desc">The hero stage and focused section only. Deep soft cast, no hard edges.</p></div>
+      <div class="sh sh-c-green" style="grid-column:span 3"><div class="name">CommenHers glow</div><div class="tok">0 10px 32px rgba(0,0,0,.08), 0 8px 22px rgba(22,163,74,.14)</div><p class="desc">Reserved for the hero snapshot card and featured pricing tier. Double-layered: a flat black drop, plus a green-tinted diffusion that reads as "alive" rather than floating.</p></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="eyebrow">Motion</span><h2>Easing & Duration</h2><span class="bar"></span></div>
+    <div class="ease-row"><div><div class="name">Out-Expo (snap)</div><div class="tok">cubic-bezier(0.22, 1, 0.36, 1)</div></div><div class="track"><div class="dot expo"></div></div><div class="val">620ms section-in</div></div>
+    <div class="ease-row"><div><div class="name">Out-Soft (settle)</div><div class="tok">cubic-bezier(0.25, 0.46, 0.45, 0.94)</div></div><div class="track"><div class="dot soft"></div></div><div class="val">400ms reveal</div></div>
+    <p style="color:var(--y-fg-muted);font-size:.88rem;margin-top:14px;line-height:1.6;">Two curves do the whole job. Expo for decisive arrivals (section transitions, the Persona-5 slash sweep, active-state toggles); Soft for ambient reveals and hover tweens. Durations: <span class="ds-mono" style="color:var(--y-fg);">180ms</span> micro, <span class="ds-mono" style="color:var(--y-fg);">320ms</span> mid, <span class="ds-mono" style="color:var(--y-fg);">620ms</span> hero/section.</p>
+  </section>
+</div>
+</body>
+</html>

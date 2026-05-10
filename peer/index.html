@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>心涟 · Dashboard</title>
+<link rel="stylesheet" href="/colors_and_type.css">
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--y-bg-soft);
+    font-family: var(--font-sans);
+    color: var(--y-fg);
+    min-height: 100vh;
+  }
+
+  /* === Password gate === */
+  .gate {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--space-6);
+  }
+  .gate-card {
+    background: var(--y-surface-strong);
+    border: 1px solid var(--y-line);
+    border-radius: var(--radius-lg);
+    padding: var(--space-7);
+    width: 100%; max-width: 400px;
+    box-shadow: var(--shadow-md);
+  }
+  .gate h1 {
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    margin: 0 0 var(--space-2);
+    font-weight: 500;
+    letter-spacing: var(--ls-tight);
+  }
+  .gate p {
+    margin: 0 0 var(--space-5);
+    color: var(--y-fg-muted);
+    font-size: var(--fs-sm);
+  }
+  .gate input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--y-line-strong);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    background: white;
+    margin-bottom: var(--space-3);
+  }
+  .gate input:focus {
+    outline: none;
+    border-color: var(--y-accent);
+  }
+  .gate button {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    background: var(--y-accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .gate button:hover { background: var(--y-accent-strong); }
+  .gate button:disabled { opacity: 0.5; cursor: wait; }
+  .gate .err {
+    color: var(--y-accent-strong);
+    font-size: var(--fs-sm);
+    min-height: 1.2em;
+    margin-top: var(--space-2);
+  }
+
+  /* === Dashboard === */
+  .dash {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: var(--space-7) var(--space-5);
+  }
+  .dash header {
+    margin-bottom: var(--space-6);
+    display: flex; align-items: baseline; justify-content: space-between;
+    flex-wrap: wrap; gap: var(--space-3);
+  }
+  .dash h1 {
+    font-family: var(--font-display);
+    font-size: var(--fs-3xl);
+    margin: 0;
+    font-weight: 500;
+    letter-spacing: var(--ls-tight);
+  }
+  .dash .subtitle {
+    color: var(--y-fg-muted);
+    font-size: var(--fs-sm);
+  }
+  .dash .logout {
+    background: none;
+    border: 1px solid var(--y-line-strong);
+    color: var(--y-fg-muted);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    font-size: var(--fs-sm);
+  }
+  .dash .logout:hover { color: var(--y-fg); border-color: var(--y-fg); }
+
+  .profiles {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  @media (min-width: 640px) {
+    .profiles { grid-template-columns: 1fr 1fr; }
+  }
+  .profile-card {
+    background: var(--y-surface-strong);
+    border: 1px solid var(--y-line);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .profile-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--y-line-strong);
+  }
+  .profile-card .head {
+    display: flex; align-items: center; gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  .profile-card .avatar {
+    font-size: 32px;
+    line-height: 1;
+  }
+  .profile-card .name {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 500;
+  }
+  .profile-card .desc {
+    font-size: var(--fs-sm);
+    color: var(--y-fg-muted);
+    margin-bottom: var(--space-3);
+    min-height: 2.6em;
+    line-height: 1.4;
+  }
+  .profile-card .stats {
+    display: flex; gap: var(--space-4);
+    font-size: var(--fs-xs);
+    color: var(--y-fg-muted);
+    border-top: 1px dashed var(--y-line);
+    padding-top: var(--space-3);
+  }
+  .profile-card .stats span { white-space: nowrap; }
+  .profile-card .preview {
+    font-size: var(--fs-sm);
+    margin: var(--space-2) 0 0;
+    padding: var(--space-2) var(--space-3);
+    background: var(--y-bg);
+    border-radius: var(--radius-sm);
+    color: var(--y-fg-muted);
+    font-style: italic;
+    min-height: 1.6em;
+    border-left: 2px solid var(--y-accent-soft);
+  }
+  .profile-card .preview-meta {
+    font-size: var(--fs-xs);
+    color: var(--y-fg-muted);
+    margin-top: var(--space-2);
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--y-fg-muted);
+    padding: var(--space-7);
+    font-style: italic;
+  }
+  .loading { color: var(--y-fg-muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- ========== Password Gate ========== -->
+<div id="gate" class="gate" hidden>
+  <form class="gate-card" id="gate-form">
+    <h1>心涟</h1>
+    <p>输入密码进入</p>
+    <input type="password" id="pwd" autocomplete="off" placeholder="密码" required>
+    <button type="submit" id="gate-btn">进入</button>
+    <div class="err" id="gate-err"></div>
+  </form>
+</div>
+
+<!-- ========== Dashboard ========== -->
+<div id="dash" class="dash" hidden>
+  <header>
+    <div>
+      <h1>心涟 · Dashboard</h1>
+      <div class="subtitle" id="last-refresh">载入中…</div>
+    </div>
+    <button class="logout" id="logout">退出</button>
+  </header>
+
+  <div class="profiles" id="profiles"><div class="loading">加载中…</div></div>
+</div>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+
+async function checkAuth() {
+  const r = await fetch('/api/peer?action=auth', { method: 'GET', credentials: 'same-origin' });
+  if (!r.ok) return false;
+  const j = await r.json();
+  return !!j.authenticated;
+}
+
+async function tryLogin(pwd) {
+  try {
+    const r = await fetch('/api/peer?action=auth', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd }),
+    });
+    if (r.ok) return { ok: true };
+    let body = '';
+    try { body = await r.text(); } catch {}
+    return { ok: false, status: r.status, body: body.slice(0, 200) };
+  } catch (e) {
+    return { ok: false, status: 0, body: 'network: ' + (e.message || String(e)) };
+  }
+}
+
+async function logout() {
+  await fetch('/api/peer?action=auth', { method: 'DELETE', credentials: 'same-origin' });
+  showGate();
+}
+
+function showGate() {
+  $('#gate').hidden = false;
+  $('#dash').hidden = true;
+  $('#pwd').value = '';
+  $('#pwd').focus();
+}
+
+function showDash() {
+  $('#gate').hidden = true;
+  $('#dash').hidden = false;
+  loadProfiles();
+}
+
+function relTime(iso) {
+  if (!iso) return '没有消息';
+  const t = new Date(iso);
+  const now = new Date();
+  const diff = (now - t) / 1000;
+  if (diff < 60) return '刚刚';
+  if (diff < 3600) return Math.floor(diff/60) + ' 分钟前';
+  if (diff < 86400) return Math.floor(diff/3600) + ' 小时前';
+  return Math.floor(diff/86400) + ' 天前';
+}
+
+async function loadProfiles() {
+  $('#profiles').innerHTML = '<div class="loading">加载中…</div>';
+  try {
+    const r = await fetch('/api/peer?action=profiles', { credentials: 'same-origin' });
+    if (r.status === 401) { showGate(); return; }
+    const { profiles } = await r.json();
+    if (!profiles || profiles.length === 0) {
+      $('#profiles').innerHTML = '<div class="empty">还没有 profile</div>';
+      return;
+    }
+    $('#profiles').innerHTML = profiles.map(p => {
+      const previewLine = p.last_message_preview
+        ? `<div class="preview">${escapeHtml(p.last_message_preview)}</div>
+           <div class="preview-meta">${p.last_message_role === 'user' ? '👤 她' : '🤖 心涟'} · ${relTime(p.last_message_ts)}</div>`
+        : '<div class="preview" style="font-style:italic">暂无对话</div>';
+      return `
+      <a class="profile-card" href="/peer/u/${p.profile}">
+        <div class="head">
+          <div class="avatar">${p.avatar || '👤'}</div>
+          <div class="name">${escapeHtml(p.display_name)}</div>
+        </div>
+        <div class="desc">${escapeHtml(p.description || '')}</div>
+        ${previewLine}
+        <div class="stats">
+          <span>消息 ${p.message_count}</span>
+          <span>·</span>
+          <span>${relTime(p.last_message_ts)}</span>
+        </div>
+      </a>`;
+    }).join('');
+    $('#last-refresh').textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+  } catch (e) {
+    $('#profiles').innerHTML = '<div class="empty">加载失败：' + e.message + '</div>';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// Wire up gate
+$('#gate-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('#gate-err').textContent = '';
+  $('#gate-btn').disabled = true;
+  const pwd = $('#pwd').value;
+  const result = await tryLogin(pwd);
+  $('#gate-btn').disabled = false;
+  if (result.ok) {
+    // Verify cookie actually round-trips before declaring success
+    const verify = await fetch('/api/peer?action=auth', { credentials: 'same-origin' }).then(r => r.json()).catch(() => ({}));
+    if (verify.authenticated) {
+      showDash();
+    } else {
+      $('#gate-err').textContent = 'cookie 没存上（浏览器拒收）。试试无痕窗口';
+    }
+  } else if (result.status === 401) {
+    $('#gate-err').textContent = '密码不对';
+    $('#pwd').select();
+  } else if (result.status === 0) {
+    $('#gate-err').textContent = '网络错误：' + result.body;
+  } else {
+    $('#gate-err').textContent = `${result.status}: ${result.body || '未知错误'}`;
+  }
+});
+
+$('#logout').addEventListener('click', logout);
+
+// Auto refresh every 5s
+setInterval(() => {
+  if (!$('#dash').hidden) loadProfiles();
+}, 5000);
+
+// Boot
+(async () => {
+  if (await checkAuth()) showDash();
+  else showGate();
+})();
+</script>
+
+</body>
+</html>

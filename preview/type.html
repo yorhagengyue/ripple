@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Type — Toffeemoon</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#fafaf7;font-family:var(--font-sans);color:var(--y-fg);}
+  .page{max-width:1280px;margin:0 auto;padding:48px 56px 72px;}
+  .pagehead{display:flex;justify-content:space-between;align-items:baseline;gap:24px;margin-bottom:40px;border-bottom:1px solid rgba(36,28,24,0.12);padding-bottom:24px;}
+  .pagehead h1{font-family:var(--font-display);font-weight:600;font-size:2.4rem;letter-spacing:-0.02em;margin:0;}
+  .pagehead p{color:var(--y-fg-muted);margin:0;max-width:48ch;font-size:0.95rem;line-height:1.6;}
+
+  .system{margin-bottom:64px;}
+  .sys-head{display:flex;align-items:baseline;gap:16px;margin-bottom:24px;}
+  .sys-head .eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y-fg-muted);}
+  .sys-head h2{font-family:var(--font-display);font-weight:600;font-size:1.75rem;margin:0;letter-spacing:-0.015em;}
+  .sys-head .bar{flex:1;height:1px;background:rgba(36,28,24,0.1);align-self:center;}
+
+  .specimen{display:grid;grid-template-columns:1fr 260px;gap:32px;padding:28px 28px;border:1px solid rgba(36,28,24,0.08);border-radius:18px;margin-bottom:12px;background:#fffaf4;}
+  .spec-ch{min-width:0;}
+  .spec-meta{border-left:1px solid rgba(36,28,24,0.08);padding-left:24px;}
+  .spec-meta .k{font-family:var(--font-mono);font-size:.72rem;color:var(--y-fg-muted);letter-spacing:.02em;}
+  .spec-meta .v{font-family:var(--font-mono);font-size:.78rem;color:var(--y-fg);margin-bottom:10px;letter-spacing:.02em;}
+  .spec-meta .role{font-family:var(--font-sans);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y-fg-muted);margin-bottom:14px;}
+  .spec-meta .name{font-family:var(--font-display);font-weight:600;font-size:1.25rem;letter-spacing:-0.01em;margin-bottom:4px;}
+
+  .yuqin-disp{font-family:var(--font-display);font-weight:600;font-size:clamp(3.4rem, 5vw, 5rem);line-height:.96;letter-spacing:-0.02em;}
+  .yuqin-disp .accent{color:var(--y-accent);}
+  .yuqin-h2{font-family:var(--font-display);font-weight:600;font-size:2rem;line-height:1.05;letter-spacing:-0.015em;}
+  .yuqin-h3{font-family:var(--font-display);font-weight:600;font-size:1.35rem;line-height:1.1;letter-spacing:-0.01em;}
+  .yuqin-body{font-family:var(--font-sans);font-size:1rem;line-height:1.65;max-width:55ch;color:var(--y-fg);}
+  .yuqin-body-muted{font-family:var(--font-sans);font-size:.92rem;line-height:1.7;max-width:55ch;color:var(--y-fg-muted);}
+  .yuqin-eyebrow{font-family:var(--font-sans);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--y-fg-muted);}
+
+  .ch-h1{font-family:var(--font-geist);font-weight:500;font-size:clamp(2.4rem, 4vw, 3.4rem);line-height:1.04;letter-spacing:-0.02em;color:#0a0a0a;}
+  .ch-h2{font-family:var(--font-geist);font-weight:500;font-size:1.75rem;line-height:1.05;letter-spacing:-0.015em;color:#0a0a0a;}
+  .ch-body{font-family:var(--font-geist);font-size:1rem;line-height:1.6;color:#0a0a0a;max-width:55ch;}
+  .ch-muted{font-family:var(--font-geist);font-size:.92rem;line-height:1.65;color:#737373;max-width:55ch;}
+  .ch-mono{font-family:var(--font-mono);font-size:.85rem;color:#737373;letter-spacing:.02em;}
+  .ch-eyebrow{font-family:var(--font-geist);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:#16a34a;}
+
+  .commen-card{background:#fff;border:1px solid #e5e5e5;}
+
+  .stack{display:grid;gap:16px;}
+  .scale-row{display:grid;grid-template-columns:120px 1fr 120px;gap:16px;align-items:baseline;padding:14px 0;border-top:1px dashed rgba(36,28,24,0.12);}
+  .scale-row:first-child{border-top:none;}
+  .scale-row .label{font-family:var(--font-mono);font-size:.72rem;color:var(--y-fg-muted);letter-spacing:.02em;}
+  .scale-row .val{font-family:var(--font-mono);font-size:.72rem;color:var(--y-fg-muted);text-align:right;letter-spacing:.02em;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="pagehead">
+    <h1>Type</h1>
+    <p>Cormorant Garamond × Manrope on the portfolio; Geist Sans × Geist Mono on the product site. Medium weight is the default; bold is rare; italics almost never.</p>
+  </div>
+
+  <section class="system">
+    <div class="sys-head">
+      <span class="eyebrow">Yuqin Portfolio</span>
+      <h2>Cormorant Garamond + Manrope</h2>
+      <span class="bar"></span>
+    </div>
+
+    <div class="specimen">
+      <div class="spec-ch">
+        <div class="yuqin-disp">Hi, I'm <span class="accent">Yuqin.</span></div>
+      </div>
+      <div class="spec-meta">
+        <div class="role">Display</div>
+        <div class="name">Hero</div>
+        <div class="k">font</div><div class="v">Cormorant Garamond 600</div>
+        <div class="k">size</div><div class="v">clamp(3.4 – 5rem)</div>
+        <div class="k">line</div><div class="v">0.96</div>
+        <div class="k">tracking</div><div class="v">-0.02em</div>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="spec-ch">
+        <div class="yuqin-h2">Grounded in brand, communication, and the pacing of a good deck.</div>
+      </div>
+      <div class="spec-meta">
+        <div class="role">Heading 2</div>
+        <div class="name">Section title</div>
+        <div class="k">font</div><div class="v">Cormorant Garamond 600</div>
+        <div class="k">size</div><div class="v">2rem / 32px</div>
+        <div class="k">line</div><div class="v">1.05</div>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="spec-ch">
+        <div class="yuqin-h3">Storied Capsule — Brand Narrative & Campaign</div>
+      </div>
+      <div class="spec-meta">
+        <div class="role">Heading 3</div>
+        <div class="name">Card title</div>
+        <div class="k">font</div><div class="v">Cormorant Garamond 600</div>
+        <div class="k">size</div><div class="v">1.35rem / 22px</div>
+      </div>
+    </div>
+
+    <div class="specimen">
+      <div class="spec-ch">
+        <div class="yuqin-eyebrow">Selected Projects</div>
+        <div style="height:16px"></div>
+        <p class="yuqin-body">I'm a penultimate-year communication management student with a strong interest in how stories are translated into brand systems, campaigns, and decks — the kind of work that needs to feel both considered and inevitable.</p>
+        <div style="height:10px"></div>
+        <p class="yuqin-body-muted">The cards below are structured as editable placeholders for stronger case studies later, while still giving recruiters a clear view of range and intent.</p>
+      </div>
+      <div class="spec-meta">
+        <div class="role">Body</div>
+        <div class="name">Manrope</div>
+        <div class="k">body</div><div class="v">Manrope 400 / 1rem / 1.65</div>
+        <div class="k">muted</div><div class="v">Manrope 400 / 0.92rem / 1.7 · color #6f645d</div>
+        <div class="k">eyebrow</div><div class="v">Manrope 500 / 0.72rem / 0.18em / uppercase</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="system">
+    <div class="sys-head">
+      <span class="eyebrow">CommenHers</span>
+      <h2>Geist Sans + Geist Mono</h2>
+      <span class="bar"></span>
+    </div>
+
+    <div class="specimen commen-card">
+      <div class="spec-ch">
+        <div class="ch-h1">Where upcycling becomes a lifestyle for all</div>
+      </div>
+      <div class="spec-meta">
+        <div class="role">Display</div>
+        <div class="name">Hero</div>
+        <div class="k">font</div><div class="v">Geist Sans 500</div>
+        <div class="k">size</div><div class="v">clamp(2.4 – 3.4rem)</div>
+        <div class="k">line</div><div class="v">1.04</div>
+        <div class="k">tracking</div><div class="v">-0.02em</div>
+      </div>
+    </div>
+
+    <div class="specimen commen-card">
+      <div class="spec-ch">
+        <div class="ch-eyebrow">Our commitment</div>
+        <div style="height:10px"></div>
+        <div class="ch-h2">Slow fashion, plainly stated.</div>
+      </div>
+      <div class="spec-meta">
+        <div class="role">Heading 2 + Eyebrow</div>
+        <div class="name">Section intro</div>
+        <div class="k">h2</div><div class="v">Geist Sans 500 / 1.75rem</div>
+        <div class="k">eyebrow</div><div class="v">Geist Sans 400 / 0.72rem / 0.18em · #16a34a</div>
+      </div>
+    </div>
+
+    <div class="specimen commen-card">
+      <div class="spec-ch">
+        <p class="ch-body">Commenhers was founded to make slow fashion more accessible. We work with local makers to transform discarded textiles into objects people actually use every day.</p>
+        <div style="height:8px"></div>
+        <p class="ch-muted">Pricing, workshop capacity, and lead times are reviewed quarterly to stay honest about what's feasible at this scale.</p>
+        <div style="height:8px"></div>
+        <div class="ch-mono">SKU 04 — Continuum Daypack · from S$189</div>
+      </div>
+      <div class="spec-meta">
+        <div class="role">Body + Mono</div>
+        <div class="name">Geist</div>
+        <div class="k">body</div><div class="v">Geist Sans 400 / 1rem / 1.6</div>
+        <div class="k">muted</div><div class="v">Geist Sans 400 / 0.92rem · #737373</div>
+        <div class="k">mono</div><div class="v">Geist Mono 400 / 0.85rem</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="system">
+    <div class="sys-head">
+      <span class="eyebrow">Shared</span>
+      <h2>Scale</h2>
+      <span class="bar"></span>
+    </div>
+    <div class="stack" style="background:#fffaf4;border:1px solid rgba(36,28,24,0.08);border-radius:18px;padding:16px 28px;">
+      <div class="scale-row"><span class="label">--fs-eyebrow</span><span style="font-size:.82rem;letter-spacing:.18em;text-transform:uppercase;">Eyebrow label</span><span class="val">13px</span></div>
+      <div class="scale-row"><span class="label">--fs-sm</span><span style="font-size:.92rem">Small / muted copy</span><span class="val">15px</span></div>
+      <div class="scale-row"><span class="label">--fs-base</span><span style="font-size:1rem">Body paragraph</span><span class="val">16px</span></div>
+      <div class="scale-row"><span class="label">--fs-lg</span><span style="font-size:1.25rem">Lede / intro</span><span class="val">20px</span></div>
+      <div class="scale-row"><span class="label">--fs-xl</span><span style="font-family:var(--font-display);font-weight:600;font-size:1.5rem">H3 card title</span><span class="val">24px</span></div>
+      <div class="scale-row"><span class="label">--fs-2xl</span><span style="font-family:var(--font-display);font-weight:600;font-size:2rem">H2 section title</span><span class="val">32px</span></div>
+      <div class="scale-row"><span class="label">--fs-3xl</span><span style="font-family:var(--font-display);font-weight:600;font-size:2.5rem;letter-spacing:-0.015em">H1 page title</span><span class="val">40–45px</span></div>
+      <div class="scale-row"><span class="label">--fs-display</span><span style="font-family:var(--font-display);font-weight:600;font-size:4.2rem;letter-spacing:-0.02em;line-height:.96">Hero display</span><span class="val">67–102px</span></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

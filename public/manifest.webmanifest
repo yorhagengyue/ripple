@@ -1,0 +1,28 @@
+{
+  "name": "Ripple — Wellness Agent",
+  "short_name": "Ripple",
+  "description": "Real-time wellness monitoring agent. Workato-orchestrated, Kimi-voiced.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f1ecdf",
+  "theme_color": "#f1ecdf",
+  "lang": "en-SG",
+  "dir": "ltr",
+  "categories": ["health", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/ripple-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/ripple-icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
