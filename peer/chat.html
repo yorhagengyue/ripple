@@ -1201,8 +1201,13 @@ function buildDayDivider(day) {
 // Outside the window we use two spacer elements that occupy the cumulative
 // estimated height of the off-screen items, preserving total scrollHeight so
 // the scrollbar behaves correctly.
-const WINDOW_BEFORE = 60;  // render N items above viewport
-const WINDOW_AFTER  = 60;  // render N items below viewport
+// 2026-05-26: virtual scroll 的 estHeight 60px 估算 + flex gap 10px 跟实际
+// 消息高度不匹配（消息 40-300px），导致 spacer 计算错位，用户看到"框死在
+// 特定区域内"。改为大窗口 = 实际禁用 virtualization。300-5000 条 DOM 节点
+// modern 浏览器毫无压力。如果用户点 "加载更早" 把列表加到 5000+ 条再考虑
+// 重新启用真正的虚拟化。
+const WINDOW_BEFORE = 5000; // render N items above viewport
+const WINDOW_AFTER  = 5000; // render N items below viewport
 let scheduledRender = false;
 
 function scheduleRender() {
@@ -1700,8 +1705,9 @@ function setupLightbox() {
       scrollTick = false;
       updateStickyDay();
       updateJumpButtons();
-      // Re-window if we scrolled far from current render center
-      scheduleRender();
+      // 2026-05-26: 不再 scheduleRender —— 现在 WINDOW=5000 实质上是 render all，
+      // 每次 scroll 重建 DOM 是巨大浪费 + 导致 "框死" 错觉。renderFeed 只在
+      // 数据变更时调用（pull / loadEarlier / initialLoad / search）。
     });
   });
   $('#jump-bottom').addEventListener('click', () => {
