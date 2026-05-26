@@ -1455,6 +1455,19 @@ async function pull() {
 // 默认只渲染最近 state.initialDays 天（5 天）的消息。更早的不自动 fetch，
 // 用户点 "加载更早" 按钮才往前。
 async function initialLoad() {
+  const feed = $('#feed');
+  // Show progressive loading state so user knows it's not stuck
+  let progressTimer = setTimeout(() => {
+    if (feed && feed.querySelector('.loading')) {
+      feed.querySelector('.loading').textContent = '载入中…（首次访问可能需要 10 秒冷启动）';
+    }
+  }, 3000);
+  let slowTimer = setTimeout(() => {
+    if (feed && feed.querySelector('.loading')) {
+      feed.querySelector('.loading').textContent = '还在载入…（Vercel 函数冷启动，正在重试）';
+    }
+  }, 10000);
+
   try {
     const raw = $('#raw').checked;
     const cutoff = new Date(Date.now() - state.initialDays * 86400000);
@@ -1466,6 +1479,9 @@ async function initialLoad() {
       limit: 500,
       raw,
     });
+
+    clearTimeout(progressTimer);
+    clearTimeout(slowTimer);
 
     if (!rows || rows.length === 0) {
       // 最近 5 天没消息 — 看是不是这个 profile 完全空
@@ -1499,9 +1515,16 @@ async function initialLoad() {
     renderTimeline();
     renderOps();
   } catch (e) {
+    clearTimeout(progressTimer);
+    clearTimeout(slowTimer);
     console.error('initialLoad', e);
-    const feed = $('#feed');
-    if (feed) feed.innerHTML = `<div class="error-box">加载失败：${escapeHtml(String(e.message || e))}<br><br><a href="/peer">返回</a></div>`;
+    const msg = String(e.message || e);
+    const hint = msg === 'timeout'
+      ? '请求超时（Vercel cold start 通常 1-2 次重试后恢复）'
+      : msg.startsWith('server 5')
+        ? '服务器错误（Supabase 或 Vercel 抖动）'
+        : msg;
+    if (feed) feed.innerHTML = `<div class="error-box">加载失败：${escapeHtml(hint)}<br><br><button onclick="location.reload()" style="margin-right:8px;padding:6px 14px;background:var(--accent);color:white;border:none;border-radius:8px;cursor:pointer;">重试 / 刷新</button><a href="/peer">返回 Dashboard</a></div>`;
   }
 }
 
@@ -1645,14 +1668,27 @@ function setupLightbox() {
 
 // ---------- Boot ----------
 (async () => {
-  if (!await checkAuth()) { window.location.href = '/peer'; return; }
+  try {
+    if (!await checkAuth()) { window.location.href = '/peer'; return; }
 
-  state.profiles = await fetchProfiles() || [];
-  renderProfileList();
-  renderTopbar();
+    try {
+      state.profiles = await fetchProfiles() || [];
+    } catch (e) {
+      console.error('fetchProfiles failed', e);
+      // Continue with empty list — chat may still load if profile is valid
+      state.profiles = [];
+    }
+    renderProfileList();
+    renderTopbar();
 
-  await initialLoad();
-  setInterval(pull, 2000);
+    await initialLoad();
+    setInterval(pull, 2000);
+  } catch (e) {
+    console.error('boot error', e);
+    const feed = $('#feed');
+    if (feed) feed.innerHTML = `<div class="error-box">启动失败：${escapeHtml(String(e.message || e))}<br><br><button onclick="location.reload()" style="margin-right:8px;padding:6px 14px;background:var(--accent);color:white;border:none;border-radius:8px;cursor:pointer;">重试 / 刷新</button><a href="/peer">返回 Dashboard</a></div>`;
+    return;
+  }
 
   // Feed scroll handlers
   const feed = $('#feed');

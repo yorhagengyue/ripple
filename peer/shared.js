@@ -41,11 +41,30 @@ export async function logout() {
 // ---------------- Data fetch ----------------
 
 export async function fetchProfiles() {
-  const r = await fetch('/api/peer?action=profiles', { credentials: 'same-origin' });
-  if (r.status === 401) { window.location.href = '/peer'; return null; }
-  if (!r.ok) throw new Error(`profiles ${r.status}`);
-  const j = await r.json();
-  return j.profiles || [];
+  // Retry on 5xx (cold start). profiles is the FIRST call after boot,
+  // most likely to hit cold start.
+  const maxAttempts = 3;
+  let lastErr;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const controller = new AbortController();
+      const to = setTimeout(() => controller.abort(), 15000 + i * 5000);
+      const r = await fetch('/api/peer?action=profiles', { credentials: 'same-origin', signal: controller.signal });
+      clearTimeout(to);
+      if (r.status === 401) { window.location.href = '/peer'; return null; }
+      if (r.status >= 500) { lastErr = new Error(`server ${r.status}`); }
+      else if (!r.ok)       { throw new Error(`profiles ${r.status}`); }
+      else {
+        const j = await r.json();
+        return j.profiles || [];
+      }
+    } catch (e) {
+      lastErr = e;
+      if (e.name === 'AbortError') lastErr = new Error('timeout');
+    }
+    if (i < maxAttempts - 1) await new Promise((res) => setTimeout(res, 800 * (i + 1)));
+  }
+  throw lastErr || new Error('profiles fetch failed');
 }
 
 // Legacy forward-only signature kept for back-compat (peer/index.html dashboard).
@@ -76,11 +95,35 @@ export async function fetchMessagesQuery(opts = {}) {
   else if (opts.since_ts)     params.set('since_ts', opts.since_ts);
   else                        params.set('since_id', String(opts.since_id ?? 0));
 
-  const r = await fetch(`/api/peer?${params.toString()}`, { credentials: 'same-origin' });
-  if (r.status === 401) { window.location.href = '/peer'; return null; }
-  if (!r.ok) throw new Error(`messages ${r.status}`);
-  const j = await r.json();
-  return j.messages || [];
+  // Retry on 5xx (Vercel cold start / Supabase blip) with exponential backoff.
+  const url = `/api/peer?${params.toString()}`;
+  const maxAttempts = 3;
+  let lastErr;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutMs = 15000 + i * 5000;  // 15s, 20s, 25s
+      const to = setTimeout(() => controller.abort(), timeoutMs);
+      const r = await fetch(url, { credentials: 'same-origin', signal: controller.signal });
+      clearTimeout(to);
+      if (r.status === 401) { window.location.href = '/peer'; return null; }
+      if (r.status >= 500) {
+        lastErr = new Error(`server ${r.status}`);
+      } else if (!r.ok) {
+        throw new Error(`messages ${r.status}`);
+      } else {
+        const j = await r.json();
+        return j.messages || [];
+      }
+    } catch (e) {
+      lastErr = e;
+      if (e.name === 'AbortError') lastErr = new Error('timeout');
+    }
+    if (i < maxAttempts - 1) {
+      await new Promise((res) => setTimeout(res, 800 * (i + 1)));  // 800ms, 1600ms
+    }
+  }
+  throw lastErr || new Error('fetch failed');
 }
 
 // ---------------- Format helpers ----------------
