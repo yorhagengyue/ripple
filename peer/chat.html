@@ -7,50 +7,567 @@
 <title>心涟 · 对话</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/colors_and_type.css">
-<link rel="stylesheet" href="./shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* Chat is a fixed-height app, override body scroll lock */
-  html, body { height: 100vh; overflow: hidden; }
+/* ===== Ripple/demo design tokens (peer chat scope) ===== */
+:root {
+  --bg:           #FBFAF6;
+  --bg-soft:      #F6F4ED;
+  --panel:        #FFFFFF;
+  --panel-2:      #FCFBF7;
+  --border:       #ECE9E0;
+  --border-soft:  #F1EFE7;
+  --border-strong:#DCD8CC;
+  --fg:           #1B1A18;
+  --fg-2:         #4A4842;
+  --muted:        #8A867D;
+  --muted-2:      #B6B1A4;
+
+  --accent:       #E15538;
+  --accent-deep:  #C44529;
+  --accent-soft:  #FCE4DA;
+  --accent-tint:  #FDF1EA;
+
+  --green:        #16A34A;
+  --green-soft:   #DCFCE7;
+  --red:          #DC2626;
+  --red-soft:     #FEE2E2;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+
+  --sans: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100vh; overflow: hidden; margin: 0; }
+body {
+  font-family: var(--sans);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea { font-family: inherit; }
+button { cursor: pointer; border: none; background: none; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ===== App shell ===== */
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+  min-height: 560px;
+}
+
+/* ===== Sidebar ===== */
+.side {
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 14px 12px;
+  overflow-y: auto;
+  gap: 6px;
+}
+.side::-webkit-scrollbar { width: 6px; }
+.side::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px 14px;
+}
+.brand .logo {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  color: white;
+  font-weight: 700; font-size: 13px;
+  letter-spacing: -0.02em;
+}
+.brand .name {
+  font-size: 16px; font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.side-group { margin-top: 8px; }
+.side-group-hd {
+  font-size: 10.5px;
+  color: var(--muted);
+  padding: 8px 10px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+/* Profile cards in sidebar */
+.profile-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: background 140ms;
+  margin-bottom: 2px;
+}
+.profile-item:hover { background: var(--panel-2); }
+.profile-item.active {
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-soft);
+}
+.profile-item .avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  display: grid; place-items: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.profile-item.active .avatar {
+  background: var(--accent);
+  color: white;
+}
+.profile-item .body { flex: 1; min-width: 0; }
+.profile-item .name {
+  font-size: 13.5px; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.profile-item .sub {
+  font-size: 11.5px; color: var(--muted);
+  font-family: var(--mono);
+}
+
+/* Timeline buckets */
+.timeline-bucket {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--fg-2);
+  margin-bottom: 1px;
+}
+.timeline-bucket:hover { background: var(--panel-2); }
+.timeline-bucket .label { display: flex; align-items: center; gap: 8px; }
+.timeline-bucket .label .dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--muted-2);
+}
+.timeline-bucket.today .label .dot { background: var(--accent); }
+.timeline-bucket .count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Ops status */
+.ops-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px;
+  font-size: 12.5px;
+}
+.ops-row .key { color: var(--muted); }
+.ops-row .val {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--fg);
+}
+.ops-row .val.ok { color: var(--green); }
+.ops-row .val.warn { color: var(--accent); }
+.ops-row .val .dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.ops-row .val .dot.ok { background: var(--green); }
+.ops-row .val .dot.warn { background: var(--accent); }
+.ops-row .val .dot.idle { background: var(--muted-2); }
+
+/* Settings */
+.setting-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: var(--fg-2);
+  cursor: pointer;
+  user-select: none;
+}
+.setting-row input[type="checkbox"] {
+  width: 14px; height: 14px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.logout-btn {
+  margin-top: auto;
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: left;
+  transition: background 140ms;
+}
+.logout-btn:hover { background: var(--panel-2); color: var(--fg); }
+
+/* ===== Main area ===== */
+.main {
+  display: flex; flex-direction: column;
+  min-width: 0;
+  background: var(--bg);
+}
+
+/* Topbar */
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.topbar .title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 15px; font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.topbar .title .avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  display: grid; place-items: center;
+  font-size: 13px;
+}
+.topbar .live {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-family: var(--mono);
+}
+.topbar .live .pulse {
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.topbar .spacer { flex: 1; }
+.topbar .action-btn {
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  color: var(--fg-2);
+  display: grid; place-items: center;
+  transition: background 140ms;
+}
+.topbar .action-btn:hover { background: var(--panel-2); }
+
+/* Feed */
+.feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.feed::-webkit-scrollbar { width: 8px; }
+.feed::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+.feed .loading {
+  text-align: center; color: var(--muted);
+  padding: 60px 0;
+  font-family: var(--mono); font-size: 13px;
+}
+.feed .empty {
+  text-align: center; color: var(--muted);
+  padding: 60px 0;
+  font-size: 14px;
+}
+
+.date-divider {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-family: var(--mono);
+  margin: 18px 0 6px;
+  letter-spacing: 0.04em;
+}
+.date-divider::before, .date-divider::after {
+  content: ''; display: inline-block;
+  width: 36px; height: 1px;
+  background: var(--border);
+  vertical-align: middle;
+  margin: 0 12px;
+}
+
+/* Message bubbles */
+.msg {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: var(--r-lg);
+  position: relative;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.msg .ts {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-family: var(--mono);
+  margin-top: 5px;
+  display: block;
+}
+
+/* User (爸爸 / xirui) — left side, white panel */
+.msg.user {
+  align-self: flex-start;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top-left-radius: 4px;
+}
+.msg.user .ts { color: var(--muted); }
+
+/* Assistant (心涟) — right side, accent tint */
+.msg.assistant {
+  align-self: flex-end;
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-soft);
+  border-top-right-radius: 4px;
+}
+.msg.assistant .ts { color: var(--accent-deep); text-align: right; }
+
+/* Tool calls — center, mono, dimmed */
+.msg.tool {
+  align-self: center;
+  max-width: 90%;
+  background: var(--bg-soft);
+  border: 1px dashed var(--border-strong);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+}
+
+/* ===== Composer (固定底部) ===== */
+.composer {
+  border-top: 1px solid var(--border);
+  background: var(--panel-2);
+  padding: 12px 22px 14px;
+  flex-shrink: 0;
+}
+.composer-label {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.composer-label .hint {
+  color: var(--muted-2);
+  text-transform: none;
+  letter-spacing: 0;
+  font-style: italic;
+}
+.composer-textarea {
+  width: 100%;
+  min-height: 48px;
+  max-height: 140px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  font-size: 14px;
+  line-height: 1.45;
+  resize: vertical;
+  outline: none;
+  transition: border-color 140ms;
+}
+.composer-textarea:focus { border-color: var(--accent); }
+
+.composer-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px;
+  gap: 12px;
+}
+.composer-row .status {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  flex: 1;
+}
+.composer-row .status.ok { color: var(--green); }
+.composer-row .status.error { color: var(--red); }
+
+.composer-btn {
+  padding: 8px 18px;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--r-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 140ms;
+}
+.composer-btn:hover { background: var(--accent-deep); }
+.composer-btn:disabled { background: var(--muted-2); cursor: not-allowed; }
+
+/* ===== Error / no-chat-id ===== */
+.error-box {
+  margin: 20px 22px;
+  padding: 14px 16px;
+  background: var(--red-soft);
+  border: 1px solid var(--red);
+  border-radius: var(--r-md);
+  color: var(--red);
+  font-size: 13px;
+}
+
+/* ===== Responsive (mobile fallback) ===== */
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; }
+  .side { display: none; }
+  .topbar .live { display: none; }
+}
 </style>
 </head>
 <body>
 
-<div class="chat-shell">
-  <header class="chat-topbar">
-    <a class="back" href="/peer">← 返回</a>
-    <span class="title" id="title">载入…</span>
-    <span class="live" id="live">实时</span>
-  </header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M3 12l18-9-7 18-2.5-7.5L3 12z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M4 11a8 8 0 0114-5l2-2v6h-6l2.5-2.5A6 6 0 006 11M20 13a8 8 0 01-14 5l-2 2v-6h6l-2.5 2.5A6 6 0 0018 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
 
-  <div class="chat-feed" id="feed"><div class="loading">载入对话…</div></div>
-
-  <div class="chat-footer">
-    <label><input type="checkbox" id="raw"> 显示 tool</label>
-    <label><input type="checkbox" id="autoscroll" checked> 自动滚到底</label>
-    <span class="stat" id="stat"></span>
-  </div>
-
-  <div class="composer">
-    <div class="label">
-      <span>以 bot 身份注入（人类校准）</span>
-      <span class="hint">注入后心涟会把这段当自己说过的</span>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="logo">心</div>
+      <div class="name">心涟 Operator</div>
     </div>
-    <textarea id="compose" placeholder="替心涟说一句..."></textarea>
-    <div class="row">
-      <span class="status" id="compose-status"></span>
-      <button class="btn" id="compose-send">发出</button>
+
+    <div class="side-group">
+      <div class="side-group-hd">Profiles</div>
+      <div id="profile-list">
+        <div class="profile-item">
+          <div class="avatar">·</div>
+          <div class="body">
+            <div class="name" style="color: var(--muted);">载入中...</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <div class="side-group">
+      <div class="side-group-hd">时间线</div>
+      <div id="timeline-list">
+        <div class="timeline-bucket"><span class="label" style="color:var(--muted);">无数据</span></div>
+      </div>
+    </div>
+
+    <div class="side-group">
+      <div class="side-group-hd">状态</div>
+      <div class="ops-row">
+        <span class="key">Gateway</span>
+        <span class="val" id="ops-gateway"><span class="dot idle"></span>—</span>
+      </div>
+      <div class="ops-row">
+        <span class="key">队列待发</span>
+        <span class="val" id="ops-queue">—</span>
+      </div>
+      <div class="ops-row">
+        <span class="key">中位响应</span>
+        <span class="val" id="ops-latency">—</span>
+      </div>
+      <div class="ops-row">
+        <span class="key">24h 消息</span>
+        <span class="val" id="ops-24h">—</span>
+      </div>
+      <div class="ops-row">
+        <span class="key">总条数</span>
+        <span class="val" id="ops-total">—</span>
+      </div>
+    </div>
+
+    <div class="side-group">
+      <div class="side-group-hd">设置</div>
+      <label class="setting-row">
+        <input type="checkbox" id="raw">
+        <span>显示 tool 调用</span>
+      </label>
+      <label class="setting-row">
+        <input type="checkbox" id="autoscroll" checked>
+        <span>自动滚到底</span>
+      </label>
+    </div>
+
+    <button class="logout-btn" id="logout-btn">退出登录</button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title">
+        <div class="avatar" id="topbar-avatar">·</div>
+        <span id="topbar-name">载入…</span>
+      </div>
+      <span class="live"><span class="pulse"></span>实时</span>
+      <span class="spacer"></span>
+      <button class="action-btn" id="refresh-btn" title="重新加载">
+        <svg width="16" height="16"><use href="#i-refresh"/></svg>
+      </button>
+      <a class="action-btn" href="/peer" title="返回 Dashboard">
+        <svg width="16" height="16"><use href="#i-back"/></svg>
+      </a>
+    </header>
+
+    <div class="feed" id="feed">
+      <div class="loading">载入对话…</div>
+    </div>
+
+    <footer class="composer">
+      <div class="composer-label">
+        <span>以 bot 身份注入（人类校准）</span>
+        <span class="hint">注入后心涟会把这段当自己说过的</span>
+      </div>
+      <textarea class="composer-textarea" id="compose" placeholder="替心涟说一句..." rows="2"></textarea>
+      <div class="composer-row">
+        <span class="status" id="compose-status"></span>
+        <button class="composer-btn" id="compose-send">
+          <span>发出</span>
+          <svg width="14" height="14"><use href="#i-send"/></svg>
+        </button>
+      </div>
+    </footer>
+  </main>
 </div>
 
 <script type="module">
 import {
-  $, checkAuth, fetchProfiles, fetchMessages,
-  escapeHtml, fmtTime, cleanContent,
+  $, $$, checkAuth, logout, fetchProfiles, fetchMessages,
+  escapeHtml, fmtTime, fmtDate, fmtNumber, cleanContent,
 } from './shared.js';
 
+// ---------- URL profile ----------
 const params = new URLSearchParams(window.location.search);
 let profile = params.get('profile') || '';
 if (!profile) {
@@ -59,30 +576,228 @@ if (!profile) {
 }
 profile = profile.replace(/[^a-z0-9_-]/gi, '');
 if (!profile) {
-  document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#999;">profile 缺失。<a href="/peer">返回</a></div>';
+  document.body.innerHTML = '<div class="error-box">profile 缺失。<a href="/peer">返回 Dashboard</a></div>';
+  throw new Error('no profile');
 }
 
-let lastSourceId = 0;
-const renderedSourceIds = new Set();
-let lastDate = null;
-let messageCount = 0;
-let chatId = null;
+// ---------- State ----------
+const state = {
+  profiles: [],
+  currentChatId: null,
+  messages: [],         // accumulated, sorted by source_id
+  renderedIds: new Set(),
+  lastSourceId: 0,
+  bucketCounts: new Map(), // YYYY-MM-DD -> count
+};
 
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('zh-CN');
+// ---------- Profile sidebar ----------
+function renderProfileList() {
+  const list = $('#profile-list');
+  if (!state.profiles.length) {
+    list.innerHTML = '<div style="padding:9px 10px;color:var(--muted);font-size:12.5px;">无 profile</div>';
+    return;
+  }
+  list.innerHTML = state.profiles.map((p) => {
+    const active = p.profile === profile;
+    const avatar = escapeHtml(p.avatar || '·');
+    const name = escapeHtml(p.display_name || p.profile);
+    const sub = p.chat_id ? p.profile : 'no chat_id';
+    return `
+      <a class="profile-item ${active ? 'active' : ''}" href="/peer/u/${encodeURIComponent(p.profile)}">
+        <div class="avatar">${avatar}</div>
+        <div class="body">
+          <div class="name">${name}</div>
+          <div class="sub">${escapeHtml(sub)}</div>
+        </div>
+      </a>
+    `;
+  }).join('');
 }
 
-async function loadProfile() {
-  const profiles = await fetchProfiles();
-  if (!profiles) return;
-  const p = profiles.find((x) => x.profile === profile);
+// ---------- Topbar ----------
+function renderTopbar() {
+  const p = state.profiles.find((x) => x.profile === profile);
   if (p) {
     document.title = `${p.display_name} · 心涟`;
-    $('#title').innerHTML = `${escapeHtml(p.avatar || '👤')} ${escapeHtml(p.display_name)}`;
-    chatId = p.chat_id || null;
+    $('#topbar-name').textContent = p.display_name || profile;
+    $('#topbar-avatar').textContent = p.avatar || '·';
+    state.currentChatId = p.chat_id || null;
+  } else {
+    $('#topbar-name').textContent = profile + '（未注册）';
   }
 }
 
+// ---------- Date bucketing ----------
+function dayKey(iso) {
+  return new Date(iso).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+function dayLabel(iso, today, yest) {
+  const k = dayKey(iso);
+  if (k === today) return '今天';
+  if (k === yest)  return '昨天';
+  return new Date(iso).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
+}
+function renderTimeline() {
+  const today = dayKey(new Date());
+  const yKey = dayKey(new Date(Date.now() - 86400000));
+  const keys = Array.from(state.bucketCounts.keys()).sort().reverse();
+  const list = $('#timeline-list');
+  if (!keys.length) {
+    list.innerHTML = '<div class="timeline-bucket"><span class="label" style="color:var(--muted);">无消息</span></div>';
+    return;
+  }
+  list.innerHTML = keys.slice(0, 14).map((k) => {
+    const isToday = k === today;
+    const label = isToday ? '今天' : (k === yKey ? '昨天' : k.replace(/^\d{4}\//, ''));
+    return `
+      <div class="timeline-bucket ${isToday ? 'today' : ''}" data-day="${escapeHtml(k)}">
+        <span class="label"><span class="dot"></span>${escapeHtml(label)}</span>
+        <span class="count">${state.bucketCounts.get(k)}</span>
+      </div>
+    `;
+  }).join('');
+
+  $$('#timeline-list .timeline-bucket').forEach((el) => {
+    const day = el.dataset.day;
+    if (!day) return;
+    el.addEventListener('click', () => scrollToDay(day));
+  });
+}
+function scrollToDay(day) {
+  const target = $$('#feed .date-divider').find((el) => el.dataset.day === day);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---------- Ops status ----------
+function renderOps() {
+  const msgs = state.messages;
+  // Total
+  $('#ops-total').textContent = fmtNumber(msgs.length);
+
+  // 24h count
+  const cutoff = Date.now() - 86400000;
+  const last24 = msgs.filter((m) => new Date(m.ts).getTime() > cutoff).length;
+  $('#ops-24h').textContent = fmtNumber(last24);
+
+  // Median response: time between user msg and next assistant msg
+  const responses = [];
+  for (let i = 0; i < msgs.length - 1; i++) {
+    if (msgs[i].role === 'user' && msgs[i+1].role === 'assistant') {
+      const dt = (new Date(msgs[i+1].ts).getTime() - new Date(msgs[i].ts).getTime()) / 1000;
+      if (dt > 0 && dt < 600) responses.push(dt);
+    }
+  }
+  if (responses.length) {
+    responses.sort((a, b) => a - b);
+    const median = responses[Math.floor(responses.length / 2)];
+    $('#ops-latency').textContent = median < 60 ? median.toFixed(1) + 's' : (median / 60).toFixed(1) + 'm';
+  } else {
+    $('#ops-latency').textContent = '—';
+  }
+
+  // Gateway state: based on most recent message age
+  const lastMsg = msgs[msgs.length - 1];
+  const gw = $('#ops-gateway');
+  if (!lastMsg) {
+    gw.innerHTML = '<span class="dot idle"></span>无数据';
+  } else {
+    const age = (Date.now() - new Date(lastMsg.ts).getTime()) / 1000;
+    if (age < 600) {
+      gw.innerHTML = '<span class="dot ok"></span>正常';
+      gw.className = 'val ok';
+    } else if (age < 86400) {
+      gw.innerHTML = '<span class="dot warn"></span>静默 ' + Math.floor(age / 3600) + 'h';
+      gw.className = 'val warn';
+    } else {
+      gw.innerHTML = '<span class="dot idle"></span>>1d';
+      gw.className = 'val';
+    }
+  }
+
+  // Queue: API not yet exposed, placeholder
+  $('#ops-queue').textContent = '·';
+}
+
+// ---------- Feed rendering ----------
+function renderFeed() {
+  const feed = $('#feed');
+  const raw = $('#raw').checked;
+
+  if (!state.messages.length) {
+    feed.innerHTML = '<div class="empty">还没有消息</div>';
+    return;
+  }
+
+  const today = dayKey(new Date());
+  const yKey = dayKey(new Date(Date.now() - 86400000));
+  let lastDay = null;
+  const html = [];
+
+  for (const m of state.messages) {
+    const c = cleanContent(m.content, m.role);
+    if (c === null) continue;
+    if (!c.trim() && m.role !== 'tool') continue;
+    if (m.role === 'tool' && !raw) continue;
+
+    const k = dayKey(m.ts);
+    if (k !== lastDay) {
+      const label = (k === today) ? '今天' : (k === yKey ? '昨天' : k);
+      html.push(`<div class="date-divider" data-day="${escapeHtml(k)}">${escapeHtml(label)}</div>`);
+      lastDay = k;
+    }
+
+    if (m.role === 'tool') {
+      const tn = m.tool_name || 'tool';
+      const truncated = c.length > 200 ? c.slice(0, 200) + '…' : c;
+      html.push(`<div class="msg tool">[${escapeHtml(tn)}] ${escapeHtml(truncated)}</div>`);
+    } else {
+      html.push(`
+        <div class="msg ${m.role}">
+          ${escapeHtml(c)}
+          <span class="ts">${fmtTime(m.ts)}</span>
+        </div>
+      `);
+    }
+  }
+
+  feed.innerHTML = html.join('');
+
+  if ($('#autoscroll').checked) {
+    feed.scrollTop = feed.scrollHeight;
+  }
+}
+
+// ---------- Pull loop ----------
+async function pull() {
+  if (!profile) return;
+  try {
+    const raw = $('#raw').checked;
+    const newMsgs = await fetchMessages(profile, state.lastSourceId, raw);
+    if (!newMsgs || newMsgs.length === 0) return;
+
+    let added = 0;
+    for (const m of newMsgs) {
+      if (state.renderedIds.has(m.source_id)) continue;
+      state.renderedIds.add(m.source_id);
+      state.messages.push(m);
+      state.lastSourceId = Math.max(state.lastSourceId, m.source_id);
+      const k = dayKey(m.ts);
+      state.bucketCounts.set(k, (state.bucketCounts.get(k) || 0) + 1);
+      added++;
+    }
+    state.messages.sort((a, b) => a.source_id - b.source_id);
+
+    if (added > 0) {
+      renderFeed();
+      renderTimeline();
+      renderOps();
+    }
+  } catch (e) {
+    console.error('pull error', e);
+  }
+}
+
+// ---------- Intervene ----------
 async function intervene() {
   const text = $('#compose').value;
   const status = $('#compose-status');
@@ -91,20 +806,20 @@ async function intervene() {
     status.className = 'status error';
     return;
   }
-  if (!chatId) {
+  if (!state.currentChatId) {
     status.textContent = '没有 chat_id（profile_meta 缺）';
     status.className = 'status error';
     return;
   }
   $('#compose-send').disabled = true;
-  status.textContent = '发送中...';
+  status.textContent = '发送中…';
   status.className = 'status';
   try {
     const r = await fetch('/api/peer?action=intervene', {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile, chat_id: chatId, message: text }),
+      body: JSON.stringify({ profile, chat_id: state.currentChatId, message: text }),
     });
     const j = await r.json().catch(() => ({}));
     if (r.status === 202 && j.queued) {
@@ -123,85 +838,29 @@ async function intervene() {
   }
 }
 
-function renderMsg(m, raw) {
-  const c = cleanContent(m.content, m.role);
-  if (c === null) return null;
-  if (!c.trim() && m.role !== 'tool') return null;
-
-  const date = fmtDate(m.ts);
-  const out = [];
-  if (date !== lastDate) {
-    out.push(`<div class="date-divider">${date}</div>`);
-    lastDate = date;
-  }
-
-  if (m.role === 'tool' && raw) {
-    const tn = m.tool_name || 'tool';
-    const truncated = c.length > 200 ? c.slice(0, 200) + '…' : c;
-    out.push(`<div class="msg tool">[${escapeHtml(tn)}] ${escapeHtml(truncated)}</div>`);
-  } else if (m.role === 'tool') {
-    return null;
-  } else {
-    out.push(`
-      <div class="msg ${m.role}">
-        ${escapeHtml(c)}
-        <div class="ts">${fmtTime(m.ts)}</div>
-      </div>
-    `);
-  }
-  return out.join('');
-}
-
-async function pull() {
-  if (!profile) return;
-  try {
-    const raw = $('#raw').checked;
-    const messages = await fetchMessages(profile, lastSourceId, raw);
-    if (!messages || messages.length === 0) return;
-
-    const feed = $('#feed');
-    if (feed.querySelector('.loading')) feed.innerHTML = '';
-
-    let added = 0;
-    for (const m of messages) {
-      if (renderedSourceIds.has(m.source_id)) continue;
-      const html = renderMsg(m, raw);
-      if (html) {
-        feed.insertAdjacentHTML('beforeend', html);
-        added++;
-      }
-      renderedSourceIds.add(m.source_id);
-      lastSourceId = Math.max(lastSourceId, m.source_id);
-      messageCount++;
-    }
-
-    if (added > 0 && $('#autoscroll').checked) {
-      feed.scrollTop = feed.scrollHeight;
-    }
-    $('#stat').textContent = `${messageCount} 条`;
-  } catch (e) {
-    console.error('pull error', e);
-  }
-}
-
+// ---------- Reset on raw toggle ----------
 function clearAndReload() {
-  lastSourceId = 0;
-  renderedSourceIds.clear();
-  lastDate = null;
-  messageCount = 0;
+  state.messages = [];
+  state.renderedIds.clear();
+  state.lastSourceId = 0;
+  state.bucketCounts.clear();
   $('#feed').innerHTML = '<div class="loading">载入对话…</div>';
   pull();
 }
 
-// Boot
+// ---------- Boot ----------
 (async () => {
-  if (!profile) return;
   if (!await checkAuth()) { window.location.href = '/peer'; return; }
-  await loadProfile();
+
+  state.profiles = await fetchProfiles() || [];
+  renderProfileList();
+  renderTopbar();
+
   await pull();
   setInterval(pull, 2000);
 
   $('#raw').addEventListener('change', clearAndReload);
+  $('#refresh-btn').addEventListener('click', clearAndReload);
   $('#compose-send').addEventListener('click', intervene);
   $('#compose').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -209,8 +868,14 @@ function clearAndReload() {
       intervene();
     }
   });
+  $('#logout-btn').addEventListener('click', async () => {
+    await logout();
+    window.location.href = '/peer';
+  });
 })();
 </script>
 
 </body>
 </html>
+</content>
+</invoke>

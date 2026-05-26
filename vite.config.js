@@ -121,9 +121,6 @@ export default defineConfig(async ({ mode }) => {
           // Peer dashboard (心涟 conversation viewer)
           peerIndex:       resolve(__dirname, 'peer/index.html'),
           peerChat:        resolve(__dirname, 'peer/chat.html'),
-          peerDemo:        resolve(__dirname, 'peer/demo.html'),
-          peerTimeline:    resolve(__dirname, 'peer/timeline.html'),
-          peerPipeline:    resolve(__dirname, 'peer/pipeline.html'),
         },
       },
     },
