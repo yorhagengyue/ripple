@@ -12,6 +12,9 @@
     { "source": "/demo",          "destination": "/ripple/demo.html" },
     { "source": "/design-system", "destination": "/design-system.html" },
     { "source": "/peer",          "destination": "/peer/index.html" },
+    { "source": "/peer/demo",     "destination": "/peer/demo.html" },
+    { "source": "/peer/timeline", "destination": "/peer/timeline.html" },
+    { "source": "/peer/pipeline", "destination": "/peer/pipeline.html" },
     { "source": "/peer/u/:profile", "destination": "/peer/chat.html" }
   ],
   "headers": [

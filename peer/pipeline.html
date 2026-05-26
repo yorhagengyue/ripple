@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>心涟 · Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/colors_and_type.css">
+<link rel="stylesheet" href="./shared.css">
+<style>
+  /* 24h hour-of-day heat strip */
+  .hour-strip {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 2px;
+    margin: 8px 0 12px;
+  }
+  .hour-cell {
+    aspect-ratio: 1 / 2.2;
+    background: var(--y-bg);
+    border-radius: 4px;
+    position: relative;
+  }
+  .hour-cell .fill {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: var(--y-accent);
+    border-radius: 4px;
+    transition: height 320ms var(--ease-out-soft);
+  }
+  .hour-axis {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 2px;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--y-fg-muted);
+    text-align: center;
+  }
+  .hour-axis span { opacity: 0; }
+  .hour-axis span:nth-child(1),
+  .hour-axis span:nth-child(7),
+  .hour-axis span:nth-child(13),
+  .hour-axis span:nth-child(19),
+  .hour-axis span:nth-child(24) { opacity: 0.7; }
+
+  /* Latency dist row */
+  .lat-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .lat-table th, .lat-table td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px dashed var(--y-line);
+  }
+  .lat-table th {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--y-fg-muted);
+    font-weight: 500;
+  }
+  .lat-table td.num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .lat-table tr:last-child td { border-bottom: 0; }
+
+  /* Health pill */
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .pill.ok    { background: rgba(58, 122, 58, 0.1);  color: #3a7a3a; }
+  .pill.warn  { background: rgba(179, 137, 71, 0.12); color: #8a6324; }
+  .pill.bad   { background: rgba(200, 71, 45, 0.12);  color: var(--y-accent-strong); }
+  .pill::before { content: '●'; }
+</style>
+</head>
+<body>
+
+<div id="peer-nav-mount"></div>
+
+<main class="shell">
+  <div class="page-head">
+    <div>
+      <div class="eyebrow"><span class="slash">//</span> 03 / Pipeline · 消息流诊断</div>
+      <h1>从微信到心涟，<em>再回来</em>。</h1>
+      <p class="sub">每条消息要走六步。这里给运营视角：哪一步当前怎么样、最近 24 小时的节奏、按 profile 的吞吐和响应。</p>
+    </div>
+    <div class="meta">
+      <span class="live">LIVE · 15s 轮询</span><br>
+      <b id="last-refresh">载入中…</b>
+    </div>
+  </div>
+
+  <!-- Flow diagram with live counts -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-head">
+      <div class="title">六个<em>节点</em></div>
+      <div class="hint" id="flow-window">最近 7 天</div>
+    </div>
+    <div class="flow">
+      <div class="flow-node">
+        <div class="role">01 · 入</div>
+        <div class="title" id="flow-in">—</div>
+        <div class="detail">user 消息进入</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">02 · 模型</div>
+        <div class="title" id="flow-bot">—</div>
+        <div class="detail">心涟回复</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">03 · 工具</div>
+        <div class="title" id="flow-tool">—</div>
+        <div class="detail">tool call 次数</div>
+      </div>
+    </div>
+    <div class="flow" style="margin-top:0;">
+      <div class="flow-node">
+        <div class="role">04 · 队列</div>
+        <div class="title" id="flow-q">—</div>
+        <div class="detail">注入待发</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">05 · 延迟</div>
+        <div class="title" id="flow-lat">—</div>
+        <div class="detail">中位 user → bot</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">06 · 健康</div>
+        <div class="title" id="flow-health">—</div>
+        <div class="detail">最后一条消息距今</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 24-hour activity strip -->
+  <div class="row-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="title">一天<em>什么时候</em>活跃</div>
+        <div class="hint">按收到时间小时聚合</div>
+      </div>
+      <div class="hour-strip" id="hour-strip"></div>
+      <div class="hour-axis" id="hour-axis"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="title">健康<em>指标</em></div>
+        <div class="hint">最近 24 小时</div>
+      </div>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;font-size:0.92rem;">
+        <li style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="muted">数据库连通</span>
+          <span class="pill ok" id="health-db">OK</span>
+        </li>
+        <li style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="muted">认证 cookie</span>
+          <span class="pill ok" id="health-auth">OK</span>
+        </li>
+        <li style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="muted">最新消息距今</span>
+          <span class="pill ok" id="health-recent">—</span>
+        </li>
+        <li style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="muted">未绑定 chat_id 的 profile</span>
+          <span class="pill ok" id="health-binding">—</span>
+        </li>
+        <li style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="muted">延迟中位</span>
+          <span class="pill ok" id="health-lat">—</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Per-profile latency table -->
+  <div class="section-eyebrow-row">
+    <div>
+      <div class="eyebrow"><span class="slash">//</span> 按 profile 拆</div>
+      <h2>每个人，<em>各自的节奏</em>。</h2>
+    </div>
+    <span class="tag" id="lat-window">最近 7 天</span>
+  </div>
+  <div class="card">
+    <table class="lat-table">
+      <thead>
+        <tr>
+          <th>Profile</th>
+          <th class="num">总消息</th>
+          <th class="num">用户</th>
+          <th class="num">心涟</th>
+          <th class="num">中位响应</th>
+          <th class="num">最后</th>
+        </tr>
+      </thead>
+      <tbody id="lat-body">
+        <tr><td colspan="6"><div class="loading">载入中…</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<script type="module">
+import {
+  $, checkAuth, fetchProfiles, fetchMessages,
+  escapeHtml, fmtNumber, relTime, computeStats,
+  mountNav, mountRails,
+} from './shared.js';
+
+function setPill(el, level, text) {
+  el.className = 'pill ' + level;
+  el.textContent = text;
+}
+
+function renderFlowNumbers(stats, profiles, all) {
+  $('#flow-in').textContent = fmtNumber(stats.totals.user);
+  $('#flow-bot').textContent = fmtNumber(stats.totals.bot);
+  $('#flow-tool').textContent = fmtNumber(stats.totals.tool);
+
+  // Pending queue: we don't have a direct count without a new API; show '—' but make
+  // the placeholder explicit. Future: add /api/peer?action=queue_count.
+  $('#flow-q').textContent = '·';
+
+  $('#flow-lat').textContent = stats.medianLat !== null ? Math.round(stats.medianLat) + 's' : '—';
+
+  // Health from most recent message
+  const latest = all
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
+    .reduce((acc, m) => Math.max(acc, new Date(m.ts).getTime()), 0);
+  const ageMin = latest ? Math.round((Date.now() - latest) / 60000) : null;
+  $('#flow-health').textContent = ageMin === null ? '—'
+    : ageMin < 60 ? ageMin + ' 分钟前'
+    : Math.round(ageMin / 60) + ' 小时前';
+}
+
+function renderHourStrip(perHour) {
+  const max = Math.max(...perHour, 1);
+  const strip = $('#hour-strip');
+  strip.innerHTML = perHour.map((v) => {
+    const pct = (v / max) * 100;
+    return `<div class="hour-cell" title="${v} 条"><div class="fill" style="height:${pct}%"></div></div>`;
+  }).join('');
+  $('#hour-axis').innerHTML = perHour.map((_, i) => `<span>${String(i).padStart(2, '0')}</span>`).join('');
+}
+
+function renderHealth(stats, profiles, all) {
+  // Auth ok if we got profiles
+  setPill($('#health-auth'), 'ok', 'OK');
+  setPill($('#health-db'), profiles.length > 0 ? 'ok' : 'warn', profiles.length > 0 ? 'OK' : '空');
+
+  const latest = all.reduce((acc, m) => Math.max(acc, new Date(m.ts).getTime()), 0);
+  const ageMin = latest ? (Date.now() - latest) / 60000 : Infinity;
+  if (ageMin < 30) setPill($('#health-recent'), 'ok', '< 30 分钟');
+  else if (ageMin < 12 * 60) setPill($('#health-recent'), 'warn', Math.round(ageMin / 60) + ' 小时');
+  else setPill($('#health-recent'), 'bad', '> 12 小时');
+
+  const unbound = profiles.filter((p) => !p.chat_id).length;
+  if (unbound === 0) setPill($('#health-binding'), 'ok', '0');
+  else setPill($('#health-binding'), 'warn', unbound + ' 个');
+
+  if (stats.medianLat === null) setPill($('#health-lat'), 'warn', '无样本');
+  else if (stats.medianLat < 30) setPill($('#health-lat'), 'ok', Math.round(stats.medianLat) + 's');
+  else if (stats.medianLat < 120) setPill($('#health-lat'), 'warn', Math.round(stats.medianLat) + 's');
+  else setPill($('#health-lat'), 'bad', Math.round(stats.medianLat) + 's');
+}
+
+function renderPerProfileTable(profiles, all) {
+  const body = $('#lat-body');
+  if (profiles.length === 0) {
+    body.innerHTML = '<tr><td colspan="6"><div class="empty">无 profile</div></td></tr>';
+    return;
+  }
+  const rows = profiles.map((p) => {
+    const msgs = all.filter((m) => m.profile === p.profile && (m.role === 'user' || m.role === 'assistant'));
+    const users = msgs.filter((m) => m.role === 'user').length;
+    const bots  = msgs.filter((m) => m.role === 'assistant').length;
+    // Compute median latency for this profile
+    const sorted = [...msgs].sort((a, b) => new Date(a.ts) - new Date(b.ts));
+    const lats = [];
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (sorted[i].role !== 'user') continue;
+      const next = sorted[i + 1];
+      if (next.role !== 'assistant') continue;
+      const dt = (new Date(next.ts) - new Date(sorted[i].ts)) / 1000;
+      if (dt >= 0 && dt < 900) lats.push(dt);
+    }
+    lats.sort((a, b) => a - b);
+    const med = lats.length ? lats[Math.floor(lats.length / 2)] : null;
+    return {
+      profile: p,
+      total: msgs.length,
+      users, bots,
+      med,
+      lastTs: p.last_message_ts,
+    };
+  }).sort((a, b) => b.total - a.total);
+
+  body.innerHTML = rows.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.profile.avatar || '·')} <b>${escapeHtml(r.profile.display_name)}</b>
+        <span class="muted" style="font-family:var(--mono);font-size:0.7rem;margin-left:6px;">${escapeHtml(r.profile.profile)}</span>
+      </td>
+      <td class="num">${r.total}</td>
+      <td class="num">${r.users}</td>
+      <td class="num">${r.bots}</td>
+      <td class="num">${r.med !== null ? Math.round(r.med) + 's' : '—'}</td>
+      <td class="num">${escapeHtml(relTime(r.lastTs))}</td>
+    </tr>`).join('');
+}
+
+async function refresh() {
+  try {
+    const profiles = await fetchProfiles();
+    if (!profiles) return;
+    const all = [];
+    await Promise.all(profiles.map(async (p) => {
+      try {
+        const msgs = await fetchMessages(p.profile, 0, true);
+        if (msgs) for (const m of msgs) all.push({ ...m, profile: p.profile });
+      } catch {}
+    }));
+    const stats = computeStats(all, profiles);
+    renderFlowNumbers(stats, profiles, all);
+    renderHourStrip(stats.perHour);
+    renderHealth(stats, profiles, all);
+    renderPerProfileTable(profiles, all);
+    $('#last-refresh').textContent = '更新 · ' + new Date().toLocaleTimeString('zh-CN', { hour12: false });
+  } catch (e) {
+    console.error(e);
+    $('#last-refresh').textContent = '更新失败';
+  }
+}
+
+(async () => {
+  if (!await checkAuth()) { window.location.href = '/peer'; return; }
+  mountRails();
+  mountNav('/peer/pipeline');
+  await refresh();
+  setInterval(refresh, 15000);
+})();
+</script>
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
+import react from '@vitejs/plugin-react';
 
 // Toffeemoon Design System — Vite config
 // Dev server mounts each api/*.js Vercel handler behind its matching URL path,
@@ -12,6 +13,16 @@ function vercelToVite(handler) {
   return async (req, res) => {
     // Reconstruct the path + query from the base of the mount.
     req.url = req.originalUrl || req.url;
+
+    // Populate req.query (Vercel does this; the connect middleware does not).
+    if (!req.query) {
+      try {
+        const u = new URL(req.url, 'http://localhost');
+        req.query = Object.fromEntries(u.searchParams.entries());
+      } catch {
+        req.query = {};
+      }
+    }
 
     // Buffer body for POST/PUT
     if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
@@ -53,7 +64,10 @@ export default defineConfig(async ({ mode }) => {
   // Dynamic import so the handlers are resolved once at config-load.
   const [
     chatMod, nudgeMod, historyMod, explainMod, subscribeMod, haeMod, mcpCallMod, analyzeMod,
-    discordCurrentMod, discordTodayMod, discordSessionsMod,
+    demoReasoningMod,
+    demoThinkMod,
+    discordCurrentMod,
+    peerMod,
   ] = await Promise.all([
     import(pathToFileURL(resolve(__dirname, 'api/chat.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/chat/nudge.js')).href),
@@ -63,9 +77,10 @@ export default defineConfig(async ({ mode }) => {
     import(pathToFileURL(resolve(__dirname, 'api/ingest/hae.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/mcp/call.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/chat/analyze-vitals.js')).href),
+    import(pathToFileURL(resolve(__dirname, 'api/chat/demo-reasoning.js')).href),
+    import(pathToFileURL(resolve(__dirname, 'api/chat/demo-think.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/discord/current.js')).href),
-    import(pathToFileURL(resolve(__dirname, 'api/discord/today.js')).href),
-    import(pathToFileURL(resolve(__dirname, 'api/discord/sessions.js')).href),
+    import(pathToFileURL(resolve(__dirname, 'api/peer.js')).href),
   ]);
 
   return {
@@ -79,6 +94,7 @@ export default defineConfig(async ({ mode }) => {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || ''),
       'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || ''),
       'import.meta.env.VITE_VAPID_PUBLIC_KEY': JSON.stringify(env.VITE_VAPID_PUBLIC_KEY || ''),
+      'import.meta.env.VITE_MAPBOX_TOKEN': JSON.stringify(env.VITE_MAPBOX_TOKEN || ''),
     },
     build: {
       outDir: 'dist',
@@ -105,10 +121,14 @@ export default defineConfig(async ({ mode }) => {
           // Peer dashboard (心涟 conversation viewer)
           peerIndex:       resolve(__dirname, 'peer/index.html'),
           peerChat:        resolve(__dirname, 'peer/chat.html'),
+          peerDemo:        resolve(__dirname, 'peer/demo.html'),
+          peerTimeline:    resolve(__dirname, 'peer/timeline.html'),
+          peerPipeline:    resolve(__dirname, 'peer/pipeline.html'),
         },
       },
     },
     plugins: [
+      react(),
       {
         name: 'ripple-api',
         configureServer(server) {
@@ -117,13 +137,14 @@ export default defineConfig(async ({ mode }) => {
           server.middlewares.use('/api/chat/history',   vercelToVite(historyMod.default));
           server.middlewares.use('/api/chat/explain',         vercelToVite(explainMod.default));
           server.middlewares.use('/api/chat/analyze-vitals',  vercelToVite(analyzeMod.default));
+          server.middlewares.use('/api/chat/demo-reasoning',  vercelToVite(demoReasoningMod.default));
+          server.middlewares.use('/api/chat/demo-think',        vercelToVite(demoThinkMod.default));
           server.middlewares.use('/api/chat/subscribe',       vercelToVite(subscribeMod.default));
           server.middlewares.use('/api/chat',           vercelToVite(chatMod.default));
           server.middlewares.use('/api/ingest/hae',     vercelToVite(haeMod.default));
           server.middlewares.use('/api/mcp/call',       vercelToVite(mcpCallMod.default));
           server.middlewares.use('/api/discord/current',  vercelToVite(discordCurrentMod.default));
-          server.middlewares.use('/api/discord/today',    vercelToVite(discordTodayMod.default));
-          server.middlewares.use('/api/discord/sessions', vercelToVite(discordSessionsMod.default));
+          server.middlewares.use('/api/peer',           vercelToVite(peerMod.default));
         },
       },
     ],

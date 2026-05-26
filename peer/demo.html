@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>心涟 · 概览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/colors_and_type.css">
+<link rel="stylesheet" href="./shared.css">
+</head>
+<body>
+
+<div id="peer-nav-mount"></div>
+
+<main class="shell">
+  <!-- Hero -->
+  <section class="hero-demo">
+    <div>
+      <div class="eyebrow"><span class="slash">//</span> 00 / 心涟 · A peer-shaped agent</div>
+      <h1 class="display">每个人一段，<br>各自<em>长大</em>的对话。</h1>
+      <p class="lead">
+        心涟是一个常驻在微信里的<em>同伴型</em> agent，每个 profile（父亲、希睿、朋友、自己）跟它各自维护一段独立的对话。
+        这个控制台不是给被陪伴的人看的，是给<em>校准它的人</em>看的——查看每段对话、看节奏、必要时以 bot 身份介入一句。
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/peer">进入 Dashboard →</a>
+        <a class="btn btn--ghost" href="/peer/timeline">Timeline</a>
+        <a class="btn btn--ghost" href="/peer/pipeline">Pipeline</a>
+      </div>
+    </div>
+
+    <div class="mock-frame">
+      <div class="mock-chrome">
+        <span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span>
+        <span class="url">peer.local / dashboard</span>
+        <span style="font-weight:600;letter-spacing:0.18em;">LIVE</span>
+      </div>
+      <div class="mock-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="background:var(--y-surface-strong);border:1px solid var(--y-line);border-radius:12px;padding:12px;">
+            <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--y-fg-muted);">活跃 profile</div>
+            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:500;letter-spacing:-0.02em;">4<span style="font-size:0.5em;color:var(--y-fg-muted);"> / 5</span></div>
+          </div>
+          <div style="background:var(--y-surface-strong);border:1px solid var(--y-line);border-radius:12px;padding:12px;">
+            <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--y-fg-muted);">中位响应</div>
+            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:500;letter-spacing:-0.02em;">12<span style="font-size:0.5em;color:var(--y-fg-muted);">秒</span></div>
+          </div>
+        </div>
+        <div style="background:var(--y-surface-strong);border:1px solid var(--y-line);border-radius:12px;padding:12px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span style="font-size:24px;">👨</span>
+            <div>
+              <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:500;">父亲</div>
+              <div style="font-family:var(--mono);font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--y-fg-muted);">dad · 3 分钟前</div>
+            </div>
+          </div>
+          <div style="font-size:0.86rem;color:var(--y-fg-muted);font-style:italic;border-left:2px solid var(--y-accent-soft);padding:6px 10px;background:var(--y-bg);border-radius:6px;">
+            "今天厂里订单又多了点，机器声吵..."
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Three feature blocks -->
+  <div class="section-eyebrow-row">
+    <div>
+      <div class="eyebrow"><span class="slash">//</span> 它做什么</div>
+      <h2>三件事，<em>没多没少</em>。</h2>
+    </div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature">
+      <div class="ico">①</div>
+      <h3>每个人一段对话</h3>
+      <p>每个 profile 是一段独立 session，自己的记忆、自己的语气。心涟跟父亲的语气和跟希睿的不一样，因为它们的上下文不一样。</p>
+    </div>
+    <div class="feature">
+      <div class="ico">②</div>
+      <h3>实时同步到一处看</h3>
+      <p>Hermes 在本地处理消息收发，每条进来出去都同步到 Supabase。这个控制台是唯一的"操作员视图"，让我能一眼扫到每段对话此刻在哪。</p>
+    </div>
+    <div class="feature">
+      <div class="ico">③</div>
+      <h3>必要时人类介入</h3>
+      <p>当 bot 走偏（说错关键事实、语气不对、需要校准），从这里"以 bot 身份"插一句。它会把这条当自己说过的，下次跟着学。</p>
+    </div>
+  </div>
+
+  <!-- Architecture overview -->
+  <div class="section-eyebrow-row">
+    <div>
+      <div class="eyebrow"><span class="slash">//</span> 架构</div>
+      <h2>消息的<em>来回路径</em>。</h2>
+    </div>
+    <a class="btn btn--ghost" href="/peer/pipeline">细看 Pipeline →</a>
+  </div>
+  <div class="card">
+    <div class="flow">
+      <div class="flow-node">
+        <div class="role">01 · 来源</div>
+        <div class="title">微<em>信</em></div>
+        <div class="detail">用户在自己的对话里说话</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">02 · 本地</div>
+        <div class="title">Hermes</div>
+        <div class="detail">profile_sync daemon 抓消息</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">03 · 模型</div>
+        <div class="title">心<em>涟</em></div>
+        <div class="detail">按 profile 加载上下文，生成回复</div>
+      </div>
+    </div>
+    <div class="flow" style="margin-top:0;">
+      <div class="flow-node">
+        <div class="role">04 · 仓库</div>
+        <div class="title">Supabase</div>
+        <div class="detail">profile_messages + bot_send_queue</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">05 · 视图</div>
+        <div class="title">这个<em>控制台</em></div>
+        <div class="detail">5 秒轮询，看每段对话</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="role">06 · 注入</div>
+        <div class="title">/intervene</div>
+        <div class="detail">人写一句，~3s 后到达对方</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer / context -->
+  <div class="section-eyebrow-row" style="margin-top:48px;">
+    <div>
+      <div class="eyebrow"><span class="slash">//</span> 边界</div>
+      <h2>它<em>不是</em>什么。</h2>
+    </div>
+  </div>
+  <div class="card">
+    <ul style="list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:12px 28px;font-size:0.95rem;line-height:1.6;">
+      <li>· 不是给 profile 看的应用。Profile 用的还是普通微信。</li>
+      <li>· 不是公开产品。仅限我自己操作。</li>
+      <li>· 不写数据分析、不写"AI 总结"。每条消息原样保留。</li>
+      <li>· 不替代真实人际关系。它是补一层关怀，不是替一层。</li>
+    </ul>
+  </div>
+</main>
+
+<script type="module">
+  import { mountNav, mountRails } from './shared.js';
+  mountRails();
+  mountNav('/peer/demo');
+</script>
+
+</body>
+</html>

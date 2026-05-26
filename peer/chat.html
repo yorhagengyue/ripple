@@ -5,249 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>心涟 · 对话</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/colors_and_type.css">
+<link rel="stylesheet" href="./shared.css">
 <style>
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0;
-    background: var(--y-bg-soft);
-    font-family: var(--font-sans);
-    color: var(--y-fg);
-    height: 100vh;
-    overflow: hidden;
-  }
-  .layout {
-    display: flex; flex-direction: column;
-    height: 100vh;
-    max-width: 720px;
-    margin: 0 auto;
-    background: var(--y-bg);
-  }
-  header.topbar {
-    flex: 0 0 auto;
-    padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid var(--y-line);
-    background: var(--y-surface-strong);
-    display: flex; align-items: center; gap: var(--space-3);
-  }
-  header.topbar a.back {
-    color: var(--y-fg-muted);
-    text-decoration: none;
-    font-size: var(--fs-base);
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--y-line);
-  }
-  header.topbar a.back:hover { background: var(--y-bg); color: var(--y-fg); }
-  header.topbar .title {
-    font-family: var(--font-display);
-    font-size: var(--fs-xl);
-    font-weight: 500;
-    flex: 1;
-  }
-  header.topbar .live {
-    font-size: var(--fs-xs);
-    color: var(--y-fg-muted);
-  }
-  header.topbar .live::before {
-    content: '●';
-    color: var(--c-accent);
-    margin-right: var(--space-1);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .feed {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    padding: var(--space-5);
-    display: flex; flex-direction: column; gap: var(--space-4);
-  }
-
-  .msg {
-    max-width: 78%;
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-    font-size: var(--fs-base);
-    line-height: 1.5;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    position: relative;
-  }
-  .msg.user {
-    align-self: flex-end;
-    background: var(--y-accent);
-    color: white;
-    border-bottom-right-radius: 4px;
-  }
-  .msg.assistant {
-    align-self: flex-start;
-    background: var(--y-surface-strong);
-    border: 1px solid var(--y-line);
-    color: var(--y-fg);
-    border-bottom-left-radius: 4px;
-  }
-  .msg.tool {
-    align-self: stretch;
-    background: transparent;
-    color: var(--y-fg-muted);
-    font-size: var(--fs-xs);
-    font-family: var(--font-mono);
-    border-left: 2px solid var(--y-line);
-    padding: var(--space-1) var(--space-3);
-    border-radius: 0;
-    max-width: 100%;
-  }
-  .msg .ts {
-    font-size: 10px;
-    opacity: 0.7;
-    margin-top: var(--space-1);
-  }
-  .msg.user .ts { color: rgba(255,255,255,0.85); text-align: right; }
-  .msg.assistant .ts { color: var(--y-fg-muted); }
-
-  .date-divider {
-    text-align: center;
-    margin: var(--space-5) 0 var(--space-3);
-    font-size: var(--fs-xs);
-    color: var(--y-fg-muted);
-    letter-spacing: var(--ls-eyebrow);
-    text-transform: uppercase;
-  }
-  .date-divider::before, .date-divider::after {
-    content: '';
-    display: inline-block;
-    width: 30px;
-    height: 1px;
-    background: var(--y-line);
-    vertical-align: middle;
-    margin: 0 var(--space-2);
-  }
-
-  .empty {
-    text-align: center;
-    color: var(--y-fg-muted);
-    padding: var(--space-7);
-    font-style: italic;
-  }
-  .footer {
-    flex: 0 0 auto;
-    padding: var(--space-3) var(--space-5);
-    background: var(--y-surface-strong);
-    border-top: 1px solid var(--y-line);
-    display: flex; gap: var(--space-3); align-items: center;
-    font-size: var(--fs-xs);
-    color: var(--y-fg-muted);
-  }
-  .footer label {
-    display: inline-flex; align-items: center; gap: var(--space-1);
-    cursor: pointer;
-  }
-  .footer .stat { margin-left: auto; }
-
-  /* === Intervene composer === */
-  .composer {
-    flex: 0 0 auto;
-    padding: var(--space-3) var(--space-5);
-    background: var(--y-bg);
-    border-top: 1px solid var(--y-line);
-    display: flex; flex-direction: column; gap: var(--space-2);
-  }
-  .composer .label {
-    font-size: var(--fs-xs);
-    color: var(--y-fg-muted);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .composer .label .hint {
-    font-style: italic;
-    color: var(--y-accent-strong);
-  }
-  .composer textarea {
-    width: 100%;
-    min-height: 60px;
-    max-height: 200px;
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--y-line-strong);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-sans);
-    font-size: var(--fs-base);
-    line-height: 1.5;
-    resize: vertical;
-    background: white;
-  }
-  .composer textarea:focus {
-    outline: none;
-    border-color: var(--y-accent);
-  }
-  .composer .row {
-    display: flex; gap: var(--space-3); align-items: center;
-  }
-  .composer button {
-    padding: var(--space-2) var(--space-5);
-    background: var(--y-accent);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-sans);
-    font-size: var(--fs-sm);
-    font-weight: 500;
-    cursor: pointer;
-  }
-  .composer button:hover { background: var(--y-accent-strong); }
-  .composer button:disabled { opacity: 0.5; cursor: wait; }
-  .composer .status {
-    font-size: var(--fs-xs);
-    color: var(--y-fg-muted);
-    flex: 1;
-  }
-  .composer .status.error { color: var(--y-accent-strong); }
-  .composer .status.ok { color: var(--c-accent, #5a7d3a); }
+  /* Chat is a fixed-height app, override body scroll lock */
+  html, body { height: 100vh; overflow: hidden; }
 </style>
 </head>
 <body>
 
-<div class="layout">
-  <header class="topbar">
+<div class="chat-shell">
+  <header class="chat-topbar">
     <a class="back" href="/peer">← 返回</a>
     <span class="title" id="title">载入…</span>
     <span class="live" id="live">实时</span>
   </header>
 
-  <div class="feed" id="feed"><div class="empty">载入对话…</div></div>
+  <div class="chat-feed" id="feed"><div class="loading">载入对话…</div></div>
 
-  <div class="footer">
-    <label>
-      <input type="checkbox" id="raw">
-      显示工具调用
-    </label>
-    <label>
-      <input type="checkbox" id="autoscroll" checked>
-      自动滚到底
-    </label>
+  <div class="chat-footer">
+    <label><input type="checkbox" id="raw"> 显示 tool</label>
+    <label><input type="checkbox" id="autoscroll" checked> 自动滚到底</label>
     <span class="stat" id="stat"></span>
   </div>
 
   <div class="composer">
     <div class="label">
-      <span>以 bot 身份发（人类校准）</span>
-      <span class="hint">注入后 bot 会把这段当自己说过的、风格学着</span>
+      <span>以 bot 身份注入（人类校准）</span>
+      <span class="hint">注入后心涟会把这段当自己说过的</span>
     </div>
-    <textarea id="compose" placeholder="替 bot 说一句..."></textarea>
+    <textarea id="compose" placeholder="替心涟说一句..."></textarea>
     <div class="row">
       <span class="status" id="compose-status"></span>
-      <button id="compose-send">发出</button>
+      <button class="btn" id="compose-send">发出</button>
     </div>
   </div>
 </div>
 
-<script>
+<script type="module">
+import {
+  $, checkAuth, fetchProfiles, fetchMessages,
+  escapeHtml, fmtTime, cleanContent,
+} from './shared.js';
+
 const params = new URLSearchParams(window.location.search);
 let profile = params.get('profile') || '';
 if (!profile) {
-  // Try to read from path /peer/u/<profile>
   const m = window.location.pathname.match(/\/peer\/u\/([^/]+)/);
   if (m) profile = m[1];
 }
@@ -256,29 +62,23 @@ if (!profile) {
   document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#999;">profile 缺失。<a href="/peer">返回</a></div>';
 }
 
-const $ = (sel) => document.querySelector(sel);
 let lastSourceId = 0;
-let renderedSourceIds = new Set();
+const renderedSourceIds = new Set();
 let lastDate = null;
 let messageCount = 0;
-
-async function checkAuth() {
-  const r = await fetch('/api/peer?action=auth', { method: 'GET', credentials: 'same-origin' });
-  if (!r.ok) return false;
-  const j = await r.json();
-  return !!j.authenticated;
-}
-
 let chatId = null;
 
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('zh-CN');
+}
+
 async function loadProfile() {
-  const r = await fetch('/api/peer?action=profiles', { credentials: 'same-origin' });
-  if (r.status === 401) { window.location.href = '/peer'; return; }
-  const { profiles } = await r.json();
-  const p = (profiles || []).find(x => x.profile === profile);
+  const profiles = await fetchProfiles();
+  if (!profiles) return;
+  const p = profiles.find((x) => x.profile === profile);
   if (p) {
     document.title = `${p.display_name} · 心涟`;
-    $('#title').textContent = `${p.avatar} ${p.display_name}`;
+    $('#title').innerHTML = `${escapeHtml(p.avatar || '👤')} ${escapeHtml(p.display_name)}`;
     chatId = p.chat_id || null;
   }
 }
@@ -323,42 +123,6 @@ async function intervene() {
   }
 }
 
-function escapeHtml(s) {
-  return String(s || '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
-
-function fmtTime(iso) {
-  return new Date(iso).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
-
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('zh-CN');
-}
-
-function cleanContent(content, role) {
-  if (!content) return '';
-  let c = content;
-  if (role === 'user') {
-    if (c.startsWith('[System note')) {
-      const split = c.indexOf(']\n\n');
-      if (split !== -1) c = c.slice(split + 3);
-      else {
-        const s2 = c.indexOf(']\n');
-        if (s2 !== -1) c = c.slice(s2 + 2);
-      }
-    }
-    if (c.startsWith('[CONTEXT COMPACTION')) return null;
-    if (c.includes('[The user sent an image')) c = '[图片]';
-    else if (c.includes('[The user sent a voice')) c = '[语音]';
-  } else if (role === 'assistant') {
-    if (c.startsWith('`onboarding') || c.includes('需要进入')) return null;
-    if (c.startsWith('{')) return null;
-  }
-  return c;
-}
-
 function renderMsg(m, raw) {
   const c = cleanContent(m.content, m.role);
   if (c === null) return null;
@@ -374,7 +138,7 @@ function renderMsg(m, raw) {
   if (m.role === 'tool' && raw) {
     const tn = m.tool_name || 'tool';
     const truncated = c.length > 200 ? c.slice(0, 200) + '…' : c;
-    out.push(`<div class="msg tool">[${tn}] ${escapeHtml(truncated)}</div>`);
+    out.push(`<div class="msg tool">[${escapeHtml(tn)}] ${escapeHtml(truncated)}</div>`);
   } else if (m.role === 'tool') {
     return null;
   } else {
@@ -392,13 +156,11 @@ async function pull() {
   if (!profile) return;
   try {
     const raw = $('#raw').checked;
-    const r = await fetch(`/api/peer?action=messages&profile=${encodeURIComponent(profile)}&since_id=${lastSourceId}&raw=${raw ? 1 : 0}`, { credentials: 'same-origin' });
-    if (r.status === 401) { window.location.href = '/peer'; return; }
-    const { messages } = await r.json();
+    const messages = await fetchMessages(profile, lastSourceId, raw);
     if (!messages || messages.length === 0) return;
 
     const feed = $('#feed');
-    if (feed.querySelector('.empty')) feed.innerHTML = '';
+    if (feed.querySelector('.loading')) feed.innerHTML = '';
 
     let added = 0;
     for (const m of messages) {
@@ -427,7 +189,7 @@ function clearAndReload() {
   renderedSourceIds.clear();
   lastDate = null;
   messageCount = 0;
-  $('#feed').innerHTML = '<div class="empty">载入对话…</div>';
+  $('#feed').innerHTML = '<div class="loading">载入对话…</div>';
   pull();
 }
 
@@ -442,7 +204,6 @@ function clearAndReload() {
   $('#raw').addEventListener('change', clearAndReload);
   $('#compose-send').addEventListener('click', intervene);
   $('#compose').addEventListener('keydown', (e) => {
-    // Cmd/Ctrl + Enter to send
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       intervene();

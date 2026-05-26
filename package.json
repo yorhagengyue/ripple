@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
     "playwright": "^1.59.1",
     "vite": "^5.4.10"
   },
   "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "web-push": "^3.6.7",
     "ws": "^8.20.0"
   }
