@@ -6,6 +6,8 @@
 //   DELETE /api/peer?action=auth        → clear cookie
 //   GET  /api/peer?action=profiles      → list profiles for dashboard (auth)
 //   GET  /api/peer?action=messages&profile=X[&since_id=N&raw=1]  → list messages (auth)
+//   GET  /api/peer?action=media&path=media/<profile>/<YYYY-MM>/<uuid>.<ext>
+//                                        → 302 redirect to Supabase signed URL (5min TTL)
 
 import {
   checkPassword, issueCookie, getCookieHeader, getClearCookieHeader,
@@ -198,6 +200,47 @@ async function handleIntervene(req, res) {
   }
 }
 
+// === Media handler (2026-05-26) ===
+// Mint a 5-min Supabase Storage signed URL for an object in the `peer-media`
+// bucket, then 302 the browser to it.  Path validation: must start with
+// "media/" and contain no parent-dir traversal.  Service-role key never
+// leaves the server.
+async function handleMedia(req, res) {
+  if (!requireAuth(req, res)) return;
+  if (!URL || !KEY) {
+    return res.status(500).json({ error: 'supabase env missing' });
+  }
+  const path = String(req.query.path || '');
+  if (!path.startsWith('media/') || path.includes('..') || path.includes('//') || path.length > 512) {
+    return res.status(400).json({ error: 'invalid path' });
+  }
+  try {
+    const r = await fetch(`${URL}/storage/v1/object/sign/peer-media/${path}`, {
+      method: 'POST',
+      headers: {
+        apikey: KEY,
+        authorization: `Bearer ${KEY}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ expiresIn: 300 }),
+    });
+    if (!r.ok) {
+      const text = await r.text();
+      return res.status(r.status).json({ error: 'sign failed', detail: text.slice(0, 200) });
+    }
+    const j = await r.json();
+    const signed = j.signedURL || j.signedUrl;
+    if (!signed) {
+      return res.status(500).json({ error: 'no signedURL in response' });
+    }
+    const fullUrl = `${URL}/storage/v1${signed}`;
+    res.writeHead(302, { Location: fullUrl });
+    return res.end();
+  } catch (e) {
+    return res.status(500).json({ error: String(e).slice(0, 300) });
+  }
+}
+
 // === Router ===
 
 export default async function handler(req, res) {
@@ -223,7 +266,11 @@ export default async function handler(req, res) {
       if (method !== 'POST') return res.status(405).json({ error: 'method not allowed' });
       return handleIntervene(req, res);
     }
-    return res.status(400).json({ error: 'unknown action', valid: ['auth', 'profiles', 'messages', 'intervene'] });
+    if (action === 'media') {
+      if (method !== 'GET') return res.status(405).json({ error: 'method not allowed' });
+      return handleMedia(req, res);
+    }
+    return res.status(400).json({ error: 'unknown action', valid: ['auth', 'profiles', 'messages', 'intervene', 'media'] });
   } catch (e) {
     return res.status(500).json({ error: String(e).slice(0, 300) });
   }

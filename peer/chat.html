@@ -1105,7 +1105,7 @@ function visibleMessages() {
   for (const m of state.messages) {
     if (m.role === 'tool' && !raw) continue;
     if (m.role === 'session_meta') continue;
-    const parts = parseContent(m.content, m.role);
+    const parts = parseContent(m.content, m.role, m.attachments);
     if (parts.length === 0) continue;
     out.push({ msg: m, parts, day: dayKey(m.ts) });
   }
@@ -1115,23 +1115,36 @@ function visibleMessages() {
 function invalidateVisible() { visibleCache = null; }
 
 // ---------- Rich content renderer ----------
+// 2026-05-26: parts produced by parseContent may carry `storage_path` when
+// the upstream message has structured attachments.  When present, we encode
+// it into the media-card's data-path attribute so the lightbox click handler
+// can hit /api/peer?action=media&path=... and show real media.
 function renderParts(parts, opts = {}) {
   const q = opts.query || '';
   return parts.map((p) => {
     switch (p.kind) {
       case 'text':
         return `<div class="part part-text">${highlight(escapeHtml(p.text), q)}</div>`;
-      case 'image':
-        return mediaCard('i-img', p.label || '图片', '点击查看（无 URL）', 'image');
-      case 'voice': {
-        const sub = p.duration ? `${p.duration}s · 无 transcript` : '无 transcript';
-        return mediaCard('i-mic', p.label || '语音', sub, 'voice');
+      case 'image': {
+        const sub = p.storage_path ? '点击查看' : '点击查看（无 URL）';
+        return mediaCard('i-img', p.label || '图片', sub, 'image', p.storage_path);
       }
-      case 'video':
-        return mediaCard('i-play', p.label || '视频', '点击查看（无 URL）', 'video');
+      case 'voice': {
+        const hasUrl = !!p.storage_path;
+        const sub = p.duration
+          ? `${p.duration}s${hasUrl ? '' : ' · 无 transcript'}`
+          : (hasUrl ? '点击播放' : '无 transcript');
+        return mediaCard('i-mic', p.label || '语音', sub, 'voice', p.storage_path);
+      }
+      case 'video': {
+        const sub = p.storage_path ? '点击查看' : '点击查看（无 URL）';
+        return mediaCard('i-play', p.label || '视频', sub, 'video', p.storage_path);
+      }
       case 'file': {
-        const sub = p.filename ? '文件 · 无 URL' : '文件附件';
-        return mediaCard('i-file', p.filename || p.label || '文件', sub, 'file');
+        const sub = p.storage_path
+          ? (p.filename ? '文件' : '文件附件')
+          : (p.filename ? '文件 · 无 URL' : '文件附件');
+        return mediaCard('i-file', p.filename || p.label || '文件', sub, 'file', p.storage_path);
       }
       case 'location':
         return mediaCard('i-loc', p.label || '位置', '无 lat/lng', 'location');
@@ -1151,10 +1164,13 @@ function renderParts(parts, opts = {}) {
     }
   }).join('');
 }
-function mediaCard(iconId, label, sub, kind) {
+function mediaCard(iconId, label, sub, kind, storagePath) {
+  const pathAttr = storagePath
+    ? ` data-path="${escapeHtml(storagePath)}"`
+    : '';
   return `
     <div class="part">
-      <span class="media-card" data-media="${kind}">
+      <span class="media-card" data-media="${kind}"${pathAttr}>
         <span class="icon"><svg width="16" height="16"><use href="#${iconId}"/></svg></span>
         <span class="meta">
           <span class="label">${escapeHtml(label)}</span>
@@ -1662,6 +1678,10 @@ function setupSearch() {
 }
 
 // ---------- Lightbox ----------
+// 2026-05-26: when a card carries data-path, fetch the real media via
+// /api/peer?action=media&path=... (302 → Supabase signed URL, 5min TTL).
+// Without data-path we fall back to the legacy "no URL" placeholder so old
+// messages (pre-peer-media migration) still open gracefully.
 function setupLightbox() {
   const lb = $('#lightbox');
   $('#lb-close').addEventListener('click', () => lb.classList.remove('show'));
@@ -1670,9 +1690,32 @@ function setupLightbox() {
     const card = e.target.closest('[data-media]');
     if (!card) return;
     const kind = card.dataset.media;
+    const path = card.dataset.path || '';
     const label = card.querySelector('.label')?.textContent || kind;
-    $('#lb-body').innerHTML = `<div style="font-family:var(--mono);font-size:13px;color:var(--fg);"><b>${escapeHtml(label)}</b></div>`;
-    $('#lb-note').textContent = '当前 profile_messages 表只存文本标记，没有媒体 URL。需要新增 /api/peer?action=media 代理后才能渲染实际媒体。';
+    const body = $('#lb-body');
+    const note = $('#lb-note');
+
+    if (!path) {
+      body.innerHTML = `<div style="font-family:var(--mono);font-size:13px;color:var(--fg);"><b>${escapeHtml(label)}</b></div>`;
+      note.textContent = '该消息没有 storage_path（pre-peer-media 历史消息）。新消息会自动上传到 Supabase Storage 后可看到真实媒体。';
+      lb.classList.add('show');
+      return;
+    }
+
+    const mediaUrl = `/api/peer?action=media&path=${encodeURIComponent(path)}`;
+    let inner = '';
+    if (kind === 'image') {
+      inner = `<img id="lb-img" src="${mediaUrl}" alt="${escapeHtml(label)}" style="max-width:100%;max-height:80vh;object-fit:contain;display:block;margin:0 auto;border-radius:6px;">`;
+    } else if (kind === 'voice') {
+      inner = `<audio controls autoplay style="width:100%;"><source src="${mediaUrl}"></audio>`;
+    } else if (kind === 'video') {
+      inner = `<video controls autoplay playsinline style="max-width:100%;max-height:80vh;display:block;margin:0 auto;border-radius:6px;"><source src="${mediaUrl}"></video>`;
+    } else {
+      // file / unknown — render a download link
+      inner = `<a href="${mediaUrl}" target="_blank" rel="noopener" style="font-family:var(--mono);font-size:13px;color:var(--fg);">下载 ${escapeHtml(label)}</a>`;
+    }
+    body.innerHTML = `<div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:8px;">${escapeHtml(label)}</div>${inner}`;
+    note.textContent = '签名 URL 5 分钟内有效，刷新页面即可重新生成。';
     lb.classList.add('show');
   });
 }

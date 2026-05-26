@@ -372,9 +372,22 @@ export function cleanContent(content, role) {
 // All actual media payloads live as text markers in content (e.g. "[The user sent an image]"),
 // because the current profile_messages.sql schema has no media_type/attachment_url column.
 
-export function parseContent(rawContent, role) {
+export function parseContent(rawContent, role, attachments) {
   if (rawContent == null) return [];
   let c = String(rawContent);
+  // 2026-05-26: `attachments` is a JSON array (from profile_messages.attachments)
+  // of structured rows {type, storage_path, mime, size_bytes}.  We pair each
+  // media marker with the next attachment of the matching type by position —
+  // weixin.py appends to media_urls and media_attachments in the same loop, so
+  // order is preserved end-to-end.
+  const attQueues = { image: [], voice: [], video: [], file: [] };
+  if (Array.isArray(attachments)) {
+    for (const a of attachments) {
+      if (a && typeof a === 'object' && attQueues[a.type]) {
+        attQueues[a.type].push(a);
+      }
+    }
+  }
 
   // Strip [System note ...] preamble (user messages)
   if (role === 'user' && c.startsWith('[System note')) {
@@ -432,7 +445,16 @@ export function parseContent(rawContent, role) {
       if (seg.trim()) parts.push({ kind: 'text', text: seg });
     }
     const raw = m[1];
-    parts.push(classifyMarker(raw));
+    const part = classifyMarker(raw);
+    // Pair the marker with the next pending attachment of the matching type.
+    // This is positional matching — we rely on ingest order (weixin.py).
+    if (part && attQueues[part.kind] && attQueues[part.kind].length > 0) {
+      const att = attQueues[part.kind].shift();
+      part.storage_path = att.storage_path;
+      part.mime = att.mime;
+      part.size_bytes = att.size_bytes;
+    }
+    parts.push(part);
     lastIdx = m.index + m[0].length;
   }
   if (lastIdx < c.length) {
