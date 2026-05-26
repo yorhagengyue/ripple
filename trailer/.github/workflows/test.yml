@@ -1,0 +1,12 @@
+on:
+  push:
+name: Install and Test
+jobs:
+  render:
+    name: Install and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-node@main
+      - run: npm i
+      - run: npm test
