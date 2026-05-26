@@ -48,9 +48,35 @@ export async function fetchProfiles() {
   return j.profiles || [];
 }
 
+// Legacy forward-only signature kept for back-compat (peer/index.html dashboard).
 export async function fetchMessages(profile, sinceId = 0, raw = false) {
-  const url = `/api/peer?action=messages&profile=${encodeURIComponent(profile)}&since_id=${sinceId}&raw=${raw ? 1 : 0}`;
-  const r = await fetch(url, { credentials: 'same-origin' });
+  return fetchMessagesQuery({ profile, since_id: sinceId, raw, limit: 200 });
+}
+
+// New flexible query — chat.html uses this for date-window / backward paging.
+//
+// opts = {
+//   profile:   string (required)
+//   since_id:  number  → forward incremental (source_id > N)         [polling]
+//   since_ts:  ISO string → date-window (ts >= ISO)                  [initial paint]
+//   before_id: number  → backward paging (source_id < N, returned asc) [load earlier]
+//   raw:       bool    → include role=tool
+//   limit:     number  → 1..500 (server caps at 500)
+// }
+export async function fetchMessagesQuery(opts = {}) {
+  const profile = opts.profile;
+  if (!profile) throw new Error('fetchMessagesQuery: profile required');
+  const params = new URLSearchParams({
+    action: 'messages',
+    profile,
+    raw: opts.raw ? '1' : '0',
+    limit: String(opts.limit ?? 200),
+  });
+  if (opts.before_id != null) params.set('before_id', String(opts.before_id));
+  else if (opts.since_ts)     params.set('since_ts', opts.since_ts);
+  else                        params.set('since_id', String(opts.since_id ?? 0));
+
+  const r = await fetch(`/api/peer?${params.toString()}`, { credentials: 'same-origin' });
   if (r.status === 401) { window.location.href = '/peer'; return null; }
   if (!r.ok) throw new Error(`messages ${r.status}`);
   const j = await r.json();

@@ -860,7 +860,7 @@ a { color: inherit; text-decoration: none; }
 
 <script type="module">
 import {
-  $, $$, checkAuth, logout, fetchProfiles, fetchMessages,
+  $, $$, checkAuth, logout, fetchProfiles, fetchMessages, fetchMessagesQuery,
   escapeHtml, fmtTime, fmtDate, fmtNumber, cleanContent, parseContent,
 } from './shared.js';
 
@@ -901,9 +901,10 @@ const state = {
   searchHits: [],          // array of msg indices that match
   searchPos: -1,
   // initial pagination
-  initialPageSize: 200,
-  earlierPageSize: 200,
+  initialDays: 5,           // first paint = messages within this many days
+  earlierPageSize: 200,     // 加载更早 一次 fetch 多少
   reachedHead: false,
+  oldestLoadedTs: null,     // 最早加载到的消息时间戳（给"加载更早"按钮显示）
 };
 
 // ---------- Profile sidebar ----------
@@ -1254,7 +1255,10 @@ function renderFeed() {
     const btn = document.createElement('button');
     btn.className = 'load-earlier';
     btn.id = 'load-earlier-btn';
-    btn.textContent = '加载更早 ↑';
+    const oldest = state.oldestLoadedTs;
+    btn.textContent = oldest
+      ? `加载更早 ↑（当前最早：${new Date(oldest).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}）`
+      : `加载更早 ↑（默认只显示最近 ${state.initialDays} 天）`;
     btn.addEventListener('click', loadEarlier);
     feed.appendChild(btn);
     state.loadEarlierBtn = btn;
@@ -1361,6 +1365,7 @@ function scrollToMessageIdx(idx, smooth = false) {
 }
 
 // ---------- Pagination ----------
+// "加载更早"按钮：用户显式点击才往前 fetch（before_id 模式）
 async function loadEarlier() {
   if (state.reachedHead) return;
   const btn = state.loadEarlierBtn;
@@ -1368,11 +1373,16 @@ async function loadEarlier() {
   const beforeId = state.firstSourceId;
   if (beforeId == null) { if (btn) btn.textContent = '加载更早 ↑'; return; }
   try {
-    // Fetch a backward page: source_id < beforeId, take the latest N
     const raw = $('#raw').checked;
-    const rows = await fetchEarlier(profile, beforeId, state.earlierPageSize, raw);
+    const rows = await fetchMessagesQuery({
+      profile,
+      before_id: beforeId,
+      limit: state.earlierPageSize,
+      raw,
+    });
     if (!rows || rows.length === 0) {
       state.reachedHead = true;
+      if (btn) { btn.classList.remove('loading'); btn.textContent = '已到顶 — 没有更早消息'; }
       renderFeed();
       return;
     }
@@ -1390,7 +1400,8 @@ async function loadEarlier() {
     }
     state.messages.sort((a, b) => a.source_id - b.source_id);
     state.firstSourceId = state.messages[0]?.source_id ?? state.firstSourceId;
-    if (added < state.earlierPageSize) state.reachedHead = true;
+    state.oldestLoadedTs = state.messages[0]?.ts ?? state.oldestLoadedTs;
+    if (rows.length < state.earlierPageSize) state.reachedHead = true;
     invalidateVisible();
     state.atBottom = false;
     renderFeed();
@@ -1402,21 +1413,6 @@ async function loadEarlier() {
     console.error('loadEarlier', e);
     if (btn) { btn.classList.remove('loading'); btn.textContent = '加载更早 ↑（重试）'; }
   }
-}
-async function fetchEarlier(profile, beforeId, limit, raw) {
-  // Use raw fetch since shared.js fetchMessages only supports since_id (forward).
-  // We hit /api/peer?action=messages and add a since_id of (beforeId - limit - safety)
-  // — server returns ascending. To get the chunk *just before* beforeId, we ask
-  // for since=beforeId - limit*2 and trim. Simpler: request since=(beforeId - X) and slice.
-  // To stay safe regardless of source_id gaps, we use a binary-ish probe:
-  const probeSince = Math.max(0, Number(beforeId) - limit * 4);
-  const url = `/api/peer?action=messages&profile=${encodeURIComponent(profile)}&since_id=${probeSince}&raw=${raw ? 1 : 0}&limit=500`;
-  const r = await fetch(url, { credentials: 'same-origin' });
-  if (!r.ok) return [];
-  const j = await r.json();
-  const arr = (j.messages || []).filter((m) => m.source_id < beforeId);
-  // Return only the last `limit` rows (closest to beforeId)
-  return arr.slice(-limit);
 }
 
 // ---------- Pull loop (forward only) ----------
@@ -1455,31 +1451,32 @@ async function pull() {
   }
 }
 
-// ---------- Initial load (paginated: last N first) ----------
+// ---------- Initial load (date-window: most recent N days only) ----------
+// 默认只渲染最近 state.initialDays 天（5 天）的消息。更早的不自动 fetch，
+// 用户点 "加载更早" 按钮才往前。
 async function initialLoad() {
-  // We just call pull(); the server returns up to 200 most-recent rows for since_id=0
-  // (ordered ASC by source_id but limited). Actually server orders ASC + limit, so
-  // for since=0 we'd get the OLDEST N, not newest. We need newest first.
-  // Workaround: fetch with no since filter and rely on the row count — but server
-  // uses source_id.asc + limit. To get the newest 200, request a high since_id
-  // first by probing the max. Simpler approach: fetch once with since=0 large limit,
-  // sort, take tail. Server caps limit at 500.
   try {
     const raw = $('#raw').checked;
-    // Probe 1: get newest by hitting a large since (we don't know max; use 0 + limit 500)
-    const url = `/api/peer?action=messages&profile=${encodeURIComponent(profile)}&since_id=0&raw=${raw ? 1 : 0}&limit=500`;
-    const r = await fetch(url, { credentials: 'same-origin' });
-    if (r.status === 401) { window.location.href = '/peer'; return; }
-    const j = await r.json();
-    const all = j.messages || [];
-    if (all.length === 0) {
+    const cutoff = new Date(Date.now() - state.initialDays * 86400000);
+    const sinceTsIso = cutoff.toISOString();
+
+    const rows = await fetchMessagesQuery({
+      profile,
+      since_ts: sinceTsIso,
+      limit: 500,
+      raw,
+    });
+
+    if (!rows || rows.length === 0) {
+      // 最近 5 天没消息 — 看是不是这个 profile 完全空
+      state.reachedHead = false;  // 允许"加载更早"按钮去探一下历史
       renderFeed();
+      renderTimeline();
+      renderOps();
       return;
     }
-    // Server returns ascending by source_id; if we got 500, there may be more
-    // earlier rows. Take the most recent 200 for first render.
-    const initial = all.slice(-state.initialPageSize);
-    for (const m of initial) {
+
+    for (const m of rows) {
       if (state.renderedIds.has(m.source_id)) continue;
       state.renderedIds.add(m.source_id);
       state.messages.push(m);
@@ -1490,9 +1487,12 @@ async function initialLoad() {
       state.bucketCounts.set(k, (state.bucketCounts.get(k) || 0) + 1);
     }
     state.messages.sort((a, b) => a.source_id - b.source_id);
-    // If the fetch returned exactly 500 and we still might have more history,
-    // assume not at head. Otherwise (got < 500), this is everything → reachedHead.
-    state.reachedHead = (all.length < 500);
+    state.oldestLoadedTs = state.messages[0]?.ts ?? null;
+
+    // 5 天窗口内 fetch 到的消息已全（除非 hit 500 limit，说明 5 天内消息超过 500 条，
+    // 这种情况 firstSourceId 跳过的早消息要靠"加载更早"按钮）。
+    // before_id 仍然能往前 page，所以 reachedHead 默认 false。
+    state.reachedHead = false;
     invalidateVisible();
     state.atBottom = true;
     renderFeed();
@@ -1500,6 +1500,8 @@ async function initialLoad() {
     renderOps();
   } catch (e) {
     console.error('initialLoad', e);
+    const feed = $('#feed');
+    if (feed) feed.innerHTML = `<div class="error-box">加载失败：${escapeHtml(String(e.message || e))}<br><br><a href="/peer">返回</a></div>`;
   }
 }
 

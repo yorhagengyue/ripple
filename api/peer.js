@@ -111,11 +111,34 @@ async function handleMessages(req, res) {
   if (!requireAuth(req, res)) return;
   const profile = (req.query.profile || '').replace(/[^a-z0-9_-]/gi, '');
   if (!profile) return res.status(400).json({ error: 'profile required' });
-  const sinceId = parseInt(req.query.since_id || '0', 10);
-  const limit = Math.min(parseInt(req.query.limit || '200', 10), 500);
+
+  // Three pagination modes (priority: before_id > since_ts > since_id):
+  //   since_id=N   → forward incremental polling (source_id > N, asc)  [live pull]
+  //   since_ts=ISO → date-window initial load (ts >= ISO, asc)         [first paint]
+  //   before_id=N  → backward paging (source_id < N, desc)             [load earlier]
+  const sinceId   = parseInt(req.query.since_id  || '0', 10);
+  const beforeId  = req.query.before_id ? parseInt(req.query.before_id, 10) : null;
+  const sinceTs   = req.query.since_ts ? String(req.query.since_ts) : null;
+  const limit     = Math.min(parseInt(req.query.limit || '200', 10), 500);
   const includeRaw = req.query.raw === '1';
   const roleFilter = includeRaw ? '' : '&role=in.(user,assistant)';
-  const path = `/rest/v1/profile_messages?profile=eq.${profile}&source_id=gt.${sinceId}${roleFilter}&order=source_id.asc&limit=${limit}&select=*`;
+
+  let filter, order;
+  if (beforeId !== null && !isNaN(beforeId)) {
+    filter = `source_id=lt.${beforeId}`;
+    order  = 'source_id.desc';
+  } else if (sinceTs) {
+    if (!/^[0-9T:\-+.Z]+$/.test(sinceTs)) {
+      return res.status(400).json({ error: 'invalid since_ts' });
+    }
+    filter = `ts=gte.${encodeURIComponent(sinceTs)}`;
+    order  = 'source_id.asc';
+  } else {
+    filter = `source_id=gt.${sinceId}`;
+    order  = 'source_id.asc';
+  }
+
+  const path = `/rest/v1/profile_messages?profile=eq.${profile}&${filter}${roleFilter}&order=${order}&limit=${limit}&select=*`;
   try {
     const r = await fetch(`${URL}${path}`, {
       headers: { apikey: KEY, authorization: `Bearer ${KEY}` },
@@ -124,7 +147,9 @@ async function handleMessages(req, res) {
       const text = await r.text();
       return res.status(500).json({ error: 'supabase error', detail: text.slice(0, 300) });
     }
-    const rows = await r.json();
+    let rows = await r.json();
+    // before_id returns desc; reverse to asc for consistent client handling
+    if (beforeId !== null && Array.isArray(rows)) rows = rows.reverse();
     return res.status(200).json({ messages: rows, count: rows.length });
   } catch (e) {
     return res.status(500).json({ error: String(e).slice(0, 300) });
