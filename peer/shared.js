@@ -294,3 +294,123 @@ export function cleanContent(content, role) {
   }
   return c;
 }
+
+// ---------------- Rich content parser (for peer/chat.html) ----------------
+// Returns a structured part list:
+//   [{ kind: 'text', text }, { kind: 'image', label, transcript? }, ...]
+// kinds: text | image | voice | video | file | location | sticker | card | quote | tool | json | unknown
+// Used to render WeChat-imported messages with multiple media markers.
+// All actual media payloads live as text markers in content (e.g. "[The user sent an image]"),
+// because the current profile_messages.sql schema has no media_type/attachment_url column.
+
+export function parseContent(rawContent, role) {
+  if (rawContent == null) return [];
+  let c = String(rawContent);
+
+  // Strip [System note ...] preamble (user messages)
+  if (role === 'user' && c.startsWith('[System note')) {
+    const split = c.indexOf(']\n\n');
+    if (split !== -1) c = c.slice(split + 3);
+    else {
+      const s2 = c.indexOf(']\n');
+      if (s2 !== -1) c = c.slice(s2 + 2);
+    }
+  }
+
+  // Drop entirely-skipped messages (caller can check for empty list)
+  if (role === 'user' && c.startsWith('[CONTEXT COMPACTION')) return [];
+  if (role === 'assistant') {
+    if (c.startsWith('`onboarding') || c.includes('需要进入')) return [];
+    // Assistant raw JSON tool args — fold as json
+    if (c.trim().startsWith('{') && c.trim().endsWith('}')) {
+      return [{ kind: 'json', payload: c }];
+    }
+  }
+
+  // Quoted reply detection: "「name: quoted text」\n actual reply"
+  // WeChat-style quote prefix. Only at start.
+  let quote = null;
+  const qm = c.match(/^「([^：:]{1,30})[:：]([\s\S]{1,500}?)」\s*\n([\s\S]+)$/);
+  if (qm) {
+    quote = { speaker: qm[1].trim(), text: qm[2].trim() };
+    c = qm[3];
+  }
+
+  const parts = [];
+  if (quote) parts.push({ kind: 'quote', speaker: quote.speaker, text: quote.text });
+
+  // Tokenise on known bracket markers. We split the string into segments, emit
+  // text segments as 'text' and known markers as their structured kind.
+  // Patterns (case-insensitive on English markers):
+  //   [The user sent an image]               → image
+  //   [The user sent a voice (Ns)]           → voice (with optional duration)
+  //   [The user sent a video]                → video
+  //   [The user sent a file: filename]       → file
+  //   [The user sent a location: name lat,lng] → location
+  //   [The user sent a sticker]              → sticker
+  //   [The user sent a card: title]          → card
+  //   [图片] / [语音] / [视频] / [文件] / [位置] / [表情] / [链接] → corresponding kind (already-cleaned form)
+  //   [tool: name]   → tool marker
+  // Unknown bracket markers like [skill_view], [health, dad, daily], [Note Name]
+  // stay as text (they are Hermes-internal tags, not media).
+
+  const tokenRe = /\[(The user sent (?:an? )?(?:image|voice|video|file|location|sticker|card|link)[^\]]*|图片|语音|视频|文件|位置|表情|链接|tool:[^\]]+)\]/g;
+  let lastIdx = 0;
+  let m;
+  while ((m = tokenRe.exec(c)) !== null) {
+    if (m.index > lastIdx) {
+      const seg = c.slice(lastIdx, m.index);
+      if (seg.trim()) parts.push({ kind: 'text', text: seg });
+    }
+    const raw = m[1];
+    parts.push(classifyMarker(raw));
+    lastIdx = m.index + m[0].length;
+  }
+  if (lastIdx < c.length) {
+    const seg = c.slice(lastIdx);
+    if (seg.trim() || parts.length === 0) parts.push({ kind: 'text', text: seg });
+  }
+  if (parts.length === 0 && c.trim()) parts.push({ kind: 'text', text: c });
+  return parts;
+}
+
+function classifyMarker(raw) {
+  const lower = raw.toLowerCase();
+  // English WeChat-style markers
+  if (lower.startsWith('the user sent')) {
+    if (/sent an? image/.test(lower))    return { kind: 'image', label: '图片' };
+    if (/sent a voice/.test(lower)) {
+      const dm = raw.match(/(\d+)\s*s/i);
+      return { kind: 'voice', label: '语音', duration: dm ? Number(dm[1]) : null };
+    }
+    if (/sent a video/.test(lower))      return { kind: 'video', label: '视频' };
+    if (/sent a file/.test(lower)) {
+      const f = raw.split(':').slice(1).join(':').trim();
+      return { kind: 'file', label: f || '文件', filename: f || null };
+    }
+    if (/sent a location/.test(lower)) {
+      const tail = raw.split(':').slice(1).join(':').trim();
+      return { kind: 'location', label: tail || '位置' };
+    }
+    if (/sent a sticker/.test(lower))    return { kind: 'sticker', label: '表情' };
+    if (/sent a (card|link)/.test(lower)) {
+      const t = raw.split(':').slice(1).join(':').trim();
+      return { kind: 'card', label: t || '链接卡片', title: t || null };
+    }
+  }
+  // Chinese already-normalised markers
+  switch (raw) {
+    case '图片': return { kind: 'image', label: '图片' };
+    case '语音': return { kind: 'voice', label: '语音', duration: null };
+    case '视频': return { kind: 'video', label: '视频' };
+    case '文件': return { kind: 'file', label: '文件', filename: null };
+    case '位置': return { kind: 'location', label: '位置' };
+    case '表情': return { kind: 'sticker', label: '表情' };
+    case '链接': return { kind: 'card', label: '链接卡片', title: null };
+  }
+  // tool: marker
+  if (lower.startsWith('tool:')) {
+    return { kind: 'tool', name: raw.slice(5).trim() };
+  }
+  return { kind: 'unknown', raw };
+}

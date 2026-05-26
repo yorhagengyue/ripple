@@ -360,6 +360,265 @@ a { color: inherit; text-decoration: none; }
   border-radius: var(--r-sm);
 }
 
+/* Rich content parts inside a bubble */
+.part { display: block; }
+.part + .part { margin-top: 6px; }
+.part-text { white-space: pre-wrap; word-wrap: break-word; }
+.part-text mark.hit {
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  padding: 0 2px;
+  border-radius: 3px;
+}
+.media-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  color: var(--fg-2);
+  font-family: var(--mono);
+  max-width: 100%;
+}
+.media-card .icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  display: grid; place-items: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.media-card .meta { min-width: 0; }
+.media-card .meta .label { color: var(--fg); font-weight: 500; font-family: var(--sans); }
+.media-card .meta .sub { color: var(--muted); font-size: 11px; margin-top: 1px; }
+.media-card.sticker { padding: 4px 8px; font-size: 11.5px; }
+.media-card.unknown { border-style: dashed; color: var(--muted); }
+
+.quote-block {
+  border-left: 3px solid var(--border-strong);
+  padding: 4px 10px;
+  margin-bottom: 6px;
+  background: var(--bg-soft);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.quote-block .speaker { font-weight: 600; color: var(--fg-2); margin-right: 4px; }
+.quote-block .qt { display: block; margin-top: 2px; white-space: pre-wrap; }
+
+.json-fold {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.json-fold > summary {
+  cursor: pointer;
+  padding: 5px 10px;
+  color: var(--muted);
+  user-select: none;
+  list-style: none;
+}
+.json-fold > summary::-webkit-details-marker { display: none; }
+.json-fold[open] > summary { border-bottom: 1px solid var(--border); }
+.json-fold pre {
+  margin: 0;
+  padding: 8px 10px;
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--fg-2);
+}
+
+/* Sticky day header (floating on scroll) */
+.sticky-day {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  padding: 4px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-family: var(--mono);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms;
+}
+.sticky-day.show { opacity: 1; }
+
+/* Virtual scroll spacers (preserve scroll geometry) */
+.v-spacer { width: 100%; flex-shrink: 0; }
+
+/* Pagination loader at top of feed */
+.load-earlier {
+  align-self: center;
+  margin: 6px 0;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-family: var(--mono);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+  cursor: pointer;
+  transition: background 140ms;
+}
+.load-earlier:hover { background: var(--panel-2); color: var(--fg-2); }
+.load-earlier.loading { color: var(--muted-2); cursor: default; }
+
+/* Jump-to-bottom / top floating buttons */
+.jump-btn {
+  position: absolute;
+  right: 22px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  display: grid; place-items: center;
+  color: var(--fg-2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 160ms, transform 160ms, background 140ms;
+  pointer-events: none;
+  z-index: 6;
+}
+.jump-btn.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.jump-btn:hover { background: var(--accent-tint); color: var(--accent-deep); }
+.jump-btn .badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  font-family: var(--mono);
+  font-weight: 600;
+  border-radius: 999px;
+  display: grid; place-items: center;
+}
+.jump-btn.bottom { bottom: 18px; }
+.jump-btn.top    { top: 18px; }
+
+/* Search bar in topbar */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-input {
+  width: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  font-size: 13px;
+  outline: none;
+  transition: width 180ms, padding 180ms, border-color 180ms, background 180ms;
+}
+.search-wrap.open .search-input {
+  width: 220px;
+  padding: 6px 26px 6px 10px;
+  border-color: var(--border-strong);
+  background: var(--panel);
+}
+.search-wrap.open .search-input:focus { border-color: var(--accent); }
+.search-nav {
+  position: absolute;
+  right: 4px;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.search-wrap.open.has-hits .search-nav { display: inline-flex; }
+.search-nav button {
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--muted);
+}
+.search-nav button:hover { background: var(--panel-2); color: var(--fg); }
+.msg.hit-current { box-shadow: 0 0 0 2px var(--accent); }
+
+/* Timeline groups (sidebar) */
+.timeline-group { margin-bottom: 4px; }
+.timeline-group-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-family: var(--mono);
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  user-select: none;
+}
+.timeline-group-hd:hover { background: var(--panel-2); }
+.timeline-group-hd .chev {
+  transition: transform 160ms;
+  display: inline-block;
+}
+.timeline-group.open .timeline-group-hd .chev { transform: rotate(90deg); }
+.timeline-group-body { display: none; padding-left: 4px; }
+.timeline-group.open .timeline-group-body { display: block; }
+
+/* Lightbox overlay (image / video) */
+.lightbox {
+  position: fixed; inset: 0;
+  background: rgba(20, 18, 14, 0.85);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+.lightbox.show { display: flex; }
+.lightbox .lb-content {
+  max-width: 90vw; max-height: 90vh;
+  background: var(--panel);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  position: relative;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg-2);
+}
+.lightbox .lb-close {
+  position: absolute;
+  top: 8px; right: 12px;
+  font-size: 20px;
+  color: var(--muted);
+}
+.lightbox .lb-close:hover { color: var(--fg); }
+.lightbox .lb-note {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Feed wrapper for absolute-positioned overlays */
+.feed-wrap {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ===== Composer (固定底部) ===== */
 .composer {
   border-top: 1px solid var(--border);
@@ -456,6 +715,15 @@ a { color: inherit; text-decoration: none; }
     <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="10" r="1.5" fill="currentColor"/><path d="M3 17l5-5 4 4 3-3 6 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 11a7 7 0 0014 0M12 18v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="currentColor"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 3v4h4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-loc" viewBox="0 0 24 24"><path d="M12 22s-7-7-7-12a7 7 0 0114 0c0 5-7 12-7 12z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 10h18M7 14h4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
   </defs>
 </svg>
 
@@ -532,6 +800,17 @@ a { color: inherit; text-decoration: none; }
       </div>
       <span class="live"><span class="pulse"></span>实时</span>
       <span class="spacer"></span>
+      <div class="search-wrap" id="search-wrap">
+        <input class="search-input" id="search-input" placeholder="搜索消息… ↵ 跳转，Esc 关" type="text">
+        <span class="search-nav">
+          <span id="search-stat">0/0</span>
+          <button id="search-prev" title="上一个">↑</button>
+          <button id="search-next" title="下一个">↓</button>
+        </span>
+      </div>
+      <button class="action-btn" id="search-toggle" title="搜索 (Ctrl+F)">
+        <svg width="16" height="16"><use href="#i-search"/></svg>
+      </button>
       <button class="action-btn" id="refresh-btn" title="重新加载">
         <svg width="16" height="16"><use href="#i-refresh"/></svg>
       </button>
@@ -540,8 +819,18 @@ a { color: inherit; text-decoration: none; }
       </a>
     </header>
 
-    <div class="feed" id="feed">
-      <div class="loading">载入对话…</div>
+    <div class="feed-wrap">
+      <div class="sticky-day" id="sticky-day"></div>
+      <div class="feed" id="feed">
+        <div class="loading">载入对话…</div>
+      </div>
+      <button class="jump-btn top" id="jump-top" title="跳到顶部">
+        <svg width="16" height="16"><use href="#i-up"/></svg>
+      </button>
+      <button class="jump-btn bottom" id="jump-bottom" title="跳到最新">
+        <svg width="16" height="16"><use href="#i-down"/></svg>
+        <span class="badge" id="jump-badge" style="display:none">0</span>
+      </button>
     </div>
 
     <footer class="composer">
@@ -561,10 +850,18 @@ a { color: inherit; text-decoration: none; }
   </main>
 </div>
 
+<div class="lightbox" id="lightbox">
+  <div class="lb-content">
+    <button class="lb-close" id="lb-close">×</button>
+    <div id="lb-body"></div>
+    <div class="lb-note" id="lb-note"></div>
+  </div>
+</div>
+
 <script type="module">
 import {
   $, $$, checkAuth, logout, fetchProfiles, fetchMessages,
-  escapeHtml, fmtTime, fmtDate, fmtNumber, cleanContent,
+  escapeHtml, fmtTime, fmtDate, fmtNumber, cleanContent, parseContent,
 } from './shared.js';
 
 // ---------- URL profile ----------
@@ -584,10 +881,29 @@ if (!profile) {
 const state = {
   profiles: [],
   currentChatId: null,
-  messages: [],         // accumulated, sorted by source_id
+  messages: [],            // accumulated, sorted by source_id ASC
   renderedIds: new Set(),
-  lastSourceId: 0,
+  lastSourceId: 0,         // highest source_id seen (poll forward)
+  firstSourceId: null,     // lowest source_id seen (paginate backward)
   bucketCounts: new Map(), // YYYY-MM-DD -> count
+  // virtual scroll
+  rendered: [],            // array of {idx, el} currently in DOM
+  estHeight: 60,           // rough avg bubble height
+  rowGap: 10,              // matches .feed gap
+  topSpacer: null,
+  bottomSpacer: null,
+  loadEarlierBtn: null,
+  // viewport tracking
+  atBottom: true,
+  unreadSinceLeave: 0,
+  // search
+  searchQuery: '',
+  searchHits: [],          // array of msg indices that match
+  searchPos: -1,
+  // initial pagination
+  initialPageSize: 200,
+  earlierPageSize: 200,
+  reachedHead: false,
 };
 
 // ---------- Profile sidebar ----------
@@ -646,26 +962,79 @@ function renderTimeline() {
     list.innerHTML = '<div class="timeline-bucket"><span class="label" style="color:var(--muted);">无消息</span></div>';
     return;
   }
-  list.innerHTML = keys.slice(0, 14).map((k) => {
+  const cutoff30 = Date.now() - 30 * 86400000;
+  const recent = [];
+  const older = [];
+  for (const k of keys) {
+    const t = new Date(k).getTime();
+    (t >= cutoff30 ? recent : older).push(k);
+  }
+
+  const html = [];
+  // Recent: flat list (last ≤14 days shown)
+  for (const k of recent.slice(0, 14)) {
     const isToday = k === today;
-    const label = isToday ? '今天' : (k === yKey ? '昨天' : k.replace(/^\d{4}\//, ''));
-    return `
+    const label = isToday ? '今天' : (k === yKey ? '昨天' : k.replace(/^\d{4}\//, '').replace(/^\d{4}-/, ''));
+    html.push(`
       <div class="timeline-bucket ${isToday ? 'today' : ''}" data-day="${escapeHtml(k)}">
         <span class="label"><span class="dot"></span>${escapeHtml(label)}</span>
         <span class="count">${state.bucketCounts.get(k)}</span>
-      </div>
-    `;
-  }).join('');
+      </div>`);
+  }
+  // Older: group by YYYY-MM, collapsed
+  const byMonth = new Map();
+  for (const k of older) {
+    const mk = monthKey(k);
+    if (!byMonth.has(mk)) byMonth.set(mk, []);
+    byMonth.get(mk).push(k);
+  }
+  const monthKeys = Array.from(byMonth.keys()).sort().reverse();
+  if (monthKeys.length) {
+    html.push('<div class="side-group-hd" style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border-soft);">更早</div>');
+    for (const mk of monthKeys) {
+      const days = byMonth.get(mk);
+      const total = days.reduce((s, d) => s + (state.bucketCounts.get(d) || 0), 0);
+      html.push(`
+        <div class="timeline-group" data-month="${escapeHtml(mk)}">
+          <div class="timeline-group-hd">
+            <span><span class="chev">▸</span> ${escapeHtml(mk)}</span>
+            <span style="color:var(--muted);">${total}</span>
+          </div>
+          <div class="timeline-group-body">
+            ${days.map((k) => `
+              <div class="timeline-bucket" data-day="${escapeHtml(k)}">
+                <span class="label"><span class="dot"></span>${escapeHtml(k.replace(/^\d{4}-/, ''))}</span>
+                <span class="count">${state.bucketCounts.get(k)}</span>
+              </div>`).join('')}
+          </div>
+        </div>`);
+    }
+  }
+  list.innerHTML = html.join('');
 
   $$('#timeline-list .timeline-bucket').forEach((el) => {
     const day = el.dataset.day;
     if (!day) return;
     el.addEventListener('click', () => scrollToDay(day));
   });
+  $$('#timeline-list .timeline-group-hd').forEach((el) => {
+    el.addEventListener('click', () => el.parentElement.classList.toggle('open'));
+  });
+}
+function monthKey(dayStr) {
+  // dayStr could be locale-formatted; normalise via Date round-trip
+  const d = new Date(dayStr);
+  if (Number.isNaN(d.getTime())) {
+    // fallback: take first 7 chars
+    return dayStr.slice(0, 7);
+  }
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 function scrollToDay(day) {
-  const target = $$('#feed .date-divider').find((el) => el.dataset.day === day);
-  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Find earliest message in that day, scroll there
+  const idx = state.messages.findIndex((m) => dayKey(m.ts) === day);
+  if (idx === -1) return;
+  scrollToMessageIdx(idx, true);
 }
 
 // ---------- Ops status ----------
@@ -718,56 +1087,339 @@ function renderOps() {
   $('#ops-queue').textContent = '·';
 }
 
-// ---------- Feed rendering ----------
+// ---------- Visible (filtered) message list ----------
+// Filter messages based on raw toggle + cleanContent skip rules. Returns
+// array of { msg, parts, dayKey } — the "renderable" view of state.messages.
+let visibleCache = null;
+function visibleMessages() {
+  if (visibleCache) return visibleCache;
+  const raw = $('#raw').checked;
+  const out = [];
+  for (const m of state.messages) {
+    if (m.role === 'tool' && !raw) continue;
+    if (m.role === 'session_meta') continue;
+    const parts = parseContent(m.content, m.role);
+    if (parts.length === 0) continue;
+    out.push({ msg: m, parts, day: dayKey(m.ts) });
+  }
+  visibleCache = out;
+  return out;
+}
+function invalidateVisible() { visibleCache = null; }
+
+// ---------- Rich content renderer ----------
+function renderParts(parts, opts = {}) {
+  const q = opts.query || '';
+  return parts.map((p) => {
+    switch (p.kind) {
+      case 'text':
+        return `<div class="part part-text">${highlight(escapeHtml(p.text), q)}</div>`;
+      case 'image':
+        return mediaCard('i-img', p.label || '图片', '点击查看（无 URL）', 'image');
+      case 'voice': {
+        const sub = p.duration ? `${p.duration}s · 无 transcript` : '无 transcript';
+        return mediaCard('i-mic', p.label || '语音', sub, 'voice');
+      }
+      case 'video':
+        return mediaCard('i-play', p.label || '视频', '点击查看（无 URL）', 'video');
+      case 'file': {
+        const sub = p.filename ? '文件 · 无 URL' : '文件附件';
+        return mediaCard('i-file', p.filename || p.label || '文件', sub, 'file');
+      }
+      case 'location':
+        return mediaCard('i-loc', p.label || '位置', '无 lat/lng', 'location');
+      case 'sticker':
+        return `<div class="part"><span class="media-card sticker"><span class="icon" style="width:20px;height:20px;font-size:11px;">😀</span>${escapeHtml(p.label || '表情')}</span></div>`;
+      case 'card':
+        return mediaCard('i-card', p.title || p.label || '链接卡片', '链接 / 公众号', 'card');
+      case 'quote':
+        return `<div class="part quote-block"><span class="speaker">${escapeHtml(p.speaker)}</span><span class="qt">${highlight(escapeHtml(p.text), q)}</span></div>`;
+      case 'tool':
+        return `<div class="part"><span class="media-card" style="font-size:11.5px;"><span class="icon">⚙</span><span class="meta"><span class="label">tool · ${escapeHtml(p.name)}</span></span></span></div>`;
+      case 'json':
+        return `<div class="part"><details class="json-fold"><summary>JSON payload (${p.payload.length} chars)</summary><pre>${escapeHtml(p.payload)}</pre></details></div>`;
+      case 'unknown':
+      default:
+        return `<div class="part"><span class="media-card unknown"><span class="icon">?</span>未知: ${escapeHtml(p.raw || p.kind)}</span></div>`;
+    }
+  }).join('');
+}
+function mediaCard(iconId, label, sub, kind) {
+  return `
+    <div class="part">
+      <span class="media-card" data-media="${kind}">
+        <span class="icon"><svg width="16" height="16"><use href="#${iconId}"/></svg></span>
+        <span class="meta">
+          <span class="label">${escapeHtml(label)}</span>
+          ${sub ? `<span class="sub">${escapeHtml(sub)}</span>` : ''}
+        </span>
+      </span>
+    </div>`;
+}
+function highlight(html, q) {
+  if (!q || q.length < 1) return html;
+  // q already escape-safe (we only get user input via input box, escape it for regex)
+  const re = new RegExp(escapeRe(q), 'gi');
+  return html.replace(re, (m) => `<mark class="hit">${m}</mark>`);
+}
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ---------- Build one message element ----------
+function buildMessageEl(item, idx) {
+  const { msg: m, parts } = item;
+  const wrapper = document.createElement('div');
+  if (m.role === 'tool') {
+    wrapper.className = 'msg tool';
+    const tn = m.tool_name || 'tool';
+    const text = parts.map(p => p.kind === 'text' ? p.text : `[${p.kind}]`).join(' ');
+    const truncated = text.length > 200 ? text.slice(0, 200) + '…' : text;
+    wrapper.innerHTML = `[${escapeHtml(tn)}] ${highlight(escapeHtml(truncated), state.searchQuery)}`;
+  } else {
+    wrapper.className = `msg ${m.role}`;
+    wrapper.innerHTML = `${renderParts(parts, { query: state.searchQuery })}<span class="ts">${fmtTime(m.ts)}</span>`;
+  }
+  wrapper.dataset.idx = String(idx);
+  wrapper.dataset.day = item.day;
+  return wrapper;
+}
+
+// ---------- Date divider element ----------
+function buildDayDivider(day) {
+  const today = dayKey(new Date());
+  const yKey = dayKey(new Date(Date.now() - 86400000));
+  const label = (day === today) ? '今天' : (day === yKey ? '昨天' : day);
+  const el = document.createElement('div');
+  el.className = 'date-divider';
+  el.dataset.day = day;
+  el.innerHTML = escapeHtml(label);
+  return el;
+}
+
+// ---------- Virtual scroll renderer ----------
+// Strategy: render a window of ±BUFFER messages around the visual viewport.
+// Outside the window we use two spacer elements that occupy the cumulative
+// estimated height of the off-screen items, preserving total scrollHeight so
+// the scrollbar behaves correctly.
+const WINDOW_BEFORE = 60;  // render N items above viewport
+const WINDOW_AFTER  = 60;  // render N items below viewport
+let scheduledRender = false;
+
+function scheduleRender() {
+  if (scheduledRender) return;
+  scheduledRender = true;
+  requestAnimationFrame(() => { scheduledRender = false; renderFeed(); });
+}
+
 function renderFeed() {
   const feed = $('#feed');
-  const raw = $('#raw').checked;
+  const items = visibleMessages();
 
-  if (!state.messages.length) {
+  if (!items.length) {
     feed.innerHTML = '<div class="empty">还没有消息</div>';
+    state.topSpacer = state.bottomSpacer = state.loadEarlierBtn = null;
     return;
   }
 
-  const today = dayKey(new Date());
-  const yKey = dayKey(new Date(Date.now() - 86400000));
-  let lastDay = null;
-  const html = [];
+  // Determine which slice to render based on current scrollTop
+  const feedHeight = feed.clientHeight || 600;
+  const scrollTop = feed.scrollTop;
+  // Estimate row height as average of recent measured heights, fallback to estHeight
+  const rowH = state.estHeight + state.rowGap;
 
-  for (const m of state.messages) {
-    const c = cleanContent(m.content, m.role);
-    if (c === null) continue;
-    if (!c.trim() && m.role !== 'tool') continue;
-    if (m.role === 'tool' && !raw) continue;
+  // Center index near the scroll position
+  const total = items.length;
+  let centerIdx;
+  if (state.atBottom) {
+    centerIdx = total - 1;
+  } else {
+    centerIdx = Math.floor((scrollTop + feedHeight / 2) / rowH);
+    centerIdx = Math.max(0, Math.min(total - 1, centerIdx));
+  }
+  const start = Math.max(0, centerIdx - WINDOW_BEFORE);
+  const end   = Math.min(total - 1, centerIdx + WINDOW_AFTER);
 
-    const k = dayKey(m.ts);
-    if (k !== lastDay) {
-      const label = (k === today) ? '今天' : (k === yKey ? '昨天' : k);
-      html.push(`<div class="date-divider" data-day="${escapeHtml(k)}">${escapeHtml(label)}</div>`);
-      lastDay = k;
-    }
+  // Clear feed and rebuild
+  feed.innerHTML = '';
 
-    if (m.role === 'tool') {
-      const tn = m.tool_name || 'tool';
-      const truncated = c.length > 200 ? c.slice(0, 200) + '…' : c;
-      html.push(`<div class="msg tool">[${escapeHtml(tn)}] ${escapeHtml(truncated)}</div>`);
-    } else {
-      html.push(`
-        <div class="msg ${m.role}">
-          ${escapeHtml(c)}
-          <span class="ts">${fmtTime(m.ts)}</span>
-        </div>
-      `);
-    }
+  // Top spacer (for items 0..start-1)
+  const topPad = start * rowH;
+  const topSp = document.createElement('div');
+  topSp.className = 'v-spacer';
+  topSp.style.height = topPad + 'px';
+  feed.appendChild(topSp);
+  state.topSpacer = topSp;
+
+  // Load earlier button (if not at the head of history)
+  if (!state.reachedHead && start === 0) {
+    const btn = document.createElement('button');
+    btn.className = 'load-earlier';
+    btn.id = 'load-earlier-btn';
+    btn.textContent = '加载更早 ↑';
+    btn.addEventListener('click', loadEarlier);
+    feed.appendChild(btn);
+    state.loadEarlierBtn = btn;
+  } else {
+    state.loadEarlierBtn = null;
   }
 
-  feed.innerHTML = html.join('');
+  // Render the window with day dividers
+  let lastDay = start > 0 ? items[start - 1].day : null;
+  let measuredH = 0;
+  let measuredN = 0;
+  for (let i = start; i <= end; i++) {
+    const item = items[i];
+    if (item.day !== lastDay) {
+      feed.appendChild(buildDayDivider(item.day));
+      lastDay = item.day;
+    }
+    const el = buildMessageEl(item, i);
+    if (state.searchPos >= 0 && state.searchHits[state.searchPos] === i) {
+      el.classList.add('hit-current');
+    }
+    feed.appendChild(el);
+    measuredH += el.offsetHeight || rowH;
+    measuredN++;
+  }
 
-  if ($('#autoscroll').checked) {
+  // Bottom spacer (for items end+1..total-1)
+  const bottomPad = (total - 1 - end) * rowH;
+  const bottomSp = document.createElement('div');
+  bottomSp.className = 'v-spacer';
+  bottomSp.style.height = bottomPad + 'px';
+  feed.appendChild(bottomSp);
+  state.bottomSpacer = bottomSp;
+
+  // Recalibrate estimated row height
+  if (measuredN > 0) {
+    const avg = measuredH / measuredN;
+    state.estHeight = state.estHeight * 0.7 + avg * 0.3;
+  }
+
+  // Maintain scroll position
+  if (state.atBottom) {
     feed.scrollTop = feed.scrollHeight;
   }
+  updateStickyDay();
+  updateJumpButtons();
 }
 
-// ---------- Pull loop ----------
+// ---------- Sticky day + jump buttons ----------
+function updateStickyDay() {
+  const sticky = $('#sticky-day');
+  const feed = $('#feed');
+  const rect = feed.getBoundingClientRect();
+  // Find the message closest to feed top
+  const msgs = $$('#feed .msg, #feed .date-divider', feed);
+  let current = null;
+  for (const el of msgs) {
+    const r = el.getBoundingClientRect();
+    if (r.top - rect.top < 30) current = el; else break;
+  }
+  const day = current?.dataset?.day;
+  if (!day) {
+    sticky.classList.remove('show');
+    return;
+  }
+  const today = dayKey(new Date());
+  const yKey = dayKey(new Date(Date.now() - 86400000));
+  const label = day === today ? '今天' : (day === yKey ? '昨天' : day);
+  sticky.textContent = label;
+  if (feed.scrollTop > 20) sticky.classList.add('show');
+  else sticky.classList.remove('show');
+}
+function updateJumpButtons() {
+  const feed = $('#feed');
+  const jb = $('#jump-bottom');
+  const jt = $('#jump-top');
+  const badge = $('#jump-badge');
+  const fromBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight;
+  if (fromBottom > 160) jb.classList.add('show'); else jb.classList.remove('show');
+  if (feed.scrollTop > 600) jt.classList.add('show'); else jt.classList.remove('show');
+  state.atBottom = fromBottom < 60;
+  if (state.atBottom) {
+    state.unreadSinceLeave = 0;
+    badge.style.display = 'none';
+  } else if (state.unreadSinceLeave > 0) {
+    badge.style.display = 'grid';
+    badge.textContent = state.unreadSinceLeave > 99 ? '99+' : String(state.unreadSinceLeave);
+  }
+}
+function scrollToMessageIdx(idx, smooth = false) {
+  const feed = $('#feed');
+  // Move scroll into the corresponding window then re-render
+  const rowH = state.estHeight + state.rowGap;
+  const target = idx * rowH - feed.clientHeight / 3;
+  state.atBottom = false;
+  feed.scrollTo({ top: Math.max(0, target), behavior: smooth ? 'smooth' : 'auto' });
+  // After scroll settles, force render so item is in DOM
+  setTimeout(() => {
+    renderFeed();
+    // Refine: find the actual element and scroll to it
+    const el = $$('#feed .msg').find((e) => Number(e.dataset.idx) === idx);
+    if (el) el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+  }, smooth ? 240 : 0);
+}
+
+// ---------- Pagination ----------
+async function loadEarlier() {
+  if (state.reachedHead) return;
+  const btn = state.loadEarlierBtn;
+  if (btn) { btn.classList.add('loading'); btn.textContent = '载入中…'; }
+  const beforeId = state.firstSourceId;
+  if (beforeId == null) { if (btn) btn.textContent = '加载更早 ↑'; return; }
+  try {
+    // Fetch a backward page: source_id < beforeId, take the latest N
+    const raw = $('#raw').checked;
+    const rows = await fetchEarlier(profile, beforeId, state.earlierPageSize, raw);
+    if (!rows || rows.length === 0) {
+      state.reachedHead = true;
+      renderFeed();
+      return;
+    }
+    const feed = $('#feed');
+    const prevH = feed.scrollHeight;
+    const prevTop = feed.scrollTop;
+    let added = 0;
+    for (const m of rows) {
+      if (state.renderedIds.has(m.source_id)) continue;
+      state.renderedIds.add(m.source_id);
+      state.messages.push(m);
+      const k = dayKey(m.ts);
+      state.bucketCounts.set(k, (state.bucketCounts.get(k) || 0) + 1);
+      added++;
+    }
+    state.messages.sort((a, b) => a.source_id - b.source_id);
+    state.firstSourceId = state.messages[0]?.source_id ?? state.firstSourceId;
+    if (added < state.earlierPageSize) state.reachedHead = true;
+    invalidateVisible();
+    state.atBottom = false;
+    renderFeed();
+    renderTimeline();
+    // Preserve viewport position (offset by added content height)
+    const newH = feed.scrollHeight;
+    feed.scrollTop = prevTop + (newH - prevH);
+  } catch (e) {
+    console.error('loadEarlier', e);
+    if (btn) { btn.classList.remove('loading'); btn.textContent = '加载更早 ↑（重试）'; }
+  }
+}
+async function fetchEarlier(profile, beforeId, limit, raw) {
+  // Use raw fetch since shared.js fetchMessages only supports since_id (forward).
+  // We hit /api/peer?action=messages and add a since_id of (beforeId - limit - safety)
+  // — server returns ascending. To get the chunk *just before* beforeId, we ask
+  // for since=beforeId - limit*2 and trim. Simpler: request since=(beforeId - X) and slice.
+  // To stay safe regardless of source_id gaps, we use a binary-ish probe:
+  const probeSince = Math.max(0, Number(beforeId) - limit * 4);
+  const url = `/api/peer?action=messages&profile=${encodeURIComponent(profile)}&since_id=${probeSince}&raw=${raw ? 1 : 0}&limit=500`;
+  const r = await fetch(url, { credentials: 'same-origin' });
+  if (!r.ok) return [];
+  const j = await r.json();
+  const arr = (j.messages || []).filter((m) => m.source_id < beforeId);
+  // Return only the last `limit` rows (closest to beforeId)
+  return arr.slice(-limit);
+}
+
+// ---------- Pull loop (forward only) ----------
 async function pull() {
   if (!profile) return;
   try {
@@ -781,6 +1433,8 @@ async function pull() {
       state.renderedIds.add(m.source_id);
       state.messages.push(m);
       state.lastSourceId = Math.max(state.lastSourceId, m.source_id);
+      if (state.firstSourceId == null) state.firstSourceId = m.source_id;
+      else state.firstSourceId = Math.min(state.firstSourceId, m.source_id);
       const k = dayKey(m.ts);
       state.bucketCounts.set(k, (state.bucketCounts.get(k) || 0) + 1);
       added++;
@@ -788,12 +1442,64 @@ async function pull() {
     state.messages.sort((a, b) => a.source_id - b.source_id);
 
     if (added > 0) {
+      invalidateVisible();
+      if (!state.atBottom) state.unreadSinceLeave += added;
       renderFeed();
       renderTimeline();
       renderOps();
+      // Re-run search if active
+      if (state.searchQuery) recomputeSearchHits();
     }
   } catch (e) {
     console.error('pull error', e);
+  }
+}
+
+// ---------- Initial load (paginated: last N first) ----------
+async function initialLoad() {
+  // We just call pull(); the server returns up to 200 most-recent rows for since_id=0
+  // (ordered ASC by source_id but limited). Actually server orders ASC + limit, so
+  // for since=0 we'd get the OLDEST N, not newest. We need newest first.
+  // Workaround: fetch with no since filter and rely on the row count — but server
+  // uses source_id.asc + limit. To get the newest 200, request a high since_id
+  // first by probing the max. Simpler approach: fetch once with since=0 large limit,
+  // sort, take tail. Server caps limit at 500.
+  try {
+    const raw = $('#raw').checked;
+    // Probe 1: get newest by hitting a large since (we don't know max; use 0 + limit 500)
+    const url = `/api/peer?action=messages&profile=${encodeURIComponent(profile)}&since_id=0&raw=${raw ? 1 : 0}&limit=500`;
+    const r = await fetch(url, { credentials: 'same-origin' });
+    if (r.status === 401) { window.location.href = '/peer'; return; }
+    const j = await r.json();
+    const all = j.messages || [];
+    if (all.length === 0) {
+      renderFeed();
+      return;
+    }
+    // Server returns ascending by source_id; if we got 500, there may be more
+    // earlier rows. Take the most recent 200 for first render.
+    const initial = all.slice(-state.initialPageSize);
+    for (const m of initial) {
+      if (state.renderedIds.has(m.source_id)) continue;
+      state.renderedIds.add(m.source_id);
+      state.messages.push(m);
+      state.lastSourceId = Math.max(state.lastSourceId, m.source_id);
+      if (state.firstSourceId == null) state.firstSourceId = m.source_id;
+      else state.firstSourceId = Math.min(state.firstSourceId, m.source_id);
+      const k = dayKey(m.ts);
+      state.bucketCounts.set(k, (state.bucketCounts.get(k) || 0) + 1);
+    }
+    state.messages.sort((a, b) => a.source_id - b.source_id);
+    // If the fetch returned exactly 500 and we still might have more history,
+    // assume not at head. Otherwise (got < 500), this is everything → reachedHead.
+    state.reachedHead = (all.length < 500);
+    invalidateVisible();
+    state.atBottom = true;
+    renderFeed();
+    renderTimeline();
+    renderOps();
+  } catch (e) {
+    console.error('initialLoad', e);
   }
 }
 
@@ -843,9 +1549,96 @@ function clearAndReload() {
   state.messages = [];
   state.renderedIds.clear();
   state.lastSourceId = 0;
+  state.firstSourceId = null;
   state.bucketCounts.clear();
+  state.reachedHead = false;
+  state.atBottom = true;
+  state.unreadSinceLeave = 0;
+  state.searchQuery = '';
+  state.searchHits = [];
+  state.searchPos = -1;
+  invalidateVisible();
   $('#feed').innerHTML = '<div class="loading">载入对话…</div>';
-  pull();
+  initialLoad();
+}
+
+// ---------- Search ----------
+function recomputeSearchHits() {
+  const q = state.searchQuery.trim().toLowerCase();
+  const stat = $('#search-stat');
+  if (!q) {
+    state.searchHits = [];
+    state.searchPos = -1;
+    $('#search-wrap').classList.remove('has-hits');
+    stat.textContent = '0/0';
+    return;
+  }
+  const items = visibleMessages();
+  const hits = [];
+  for (let i = 0; i < items.length; i++) {
+    const txt = items[i].parts.map((p) => p.text || p.label || p.title || p.name || '').join(' ').toLowerCase();
+    if (txt.includes(q)) hits.push(i);
+  }
+  state.searchHits = hits;
+  state.searchPos = hits.length ? 0 : -1;
+  $('#search-wrap').classList.toggle('has-hits', hits.length > 0);
+  stat.textContent = `${hits.length ? 1 : 0}/${hits.length}`;
+  if (hits.length) jumpToSearchHit(0);
+}
+function jumpToSearchHit(pos) {
+  if (!state.searchHits.length) return;
+  state.searchPos = ((pos % state.searchHits.length) + state.searchHits.length) % state.searchHits.length;
+  $('#search-stat').textContent = `${state.searchPos + 1}/${state.searchHits.length}`;
+  scrollToMessageIdx(state.searchHits[state.searchPos], true);
+}
+function setupSearch() {
+  const wrap = $('#search-wrap');
+  const input = $('#search-input');
+  $('#search-toggle').addEventListener('click', () => {
+    wrap.classList.toggle('open');
+    if (wrap.classList.contains('open')) input.focus();
+    else { input.value = ''; state.searchQuery = ''; recomputeSearchHits(); renderFeed(); }
+  });
+  let debounce;
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      state.searchQuery = input.value;
+      recomputeSearchHits();
+      renderFeed();
+    }, 160);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { wrap.classList.remove('open'); input.value = ''; state.searchQuery = ''; recomputeSearchHits(); renderFeed(); }
+    else if (e.key === 'Enter') { e.preventDefault(); jumpToSearchHit(state.searchPos + (e.shiftKey ? -1 : 1)); }
+  });
+  $('#search-prev').addEventListener('click', () => jumpToSearchHit(state.searchPos - 1));
+  $('#search-next').addEventListener('click', () => jumpToSearchHit(state.searchPos + 1));
+  // Ctrl/Cmd+F to open
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      wrap.classList.add('open');
+      input.focus();
+      input.select();
+    }
+  });
+}
+
+// ---------- Lightbox ----------
+function setupLightbox() {
+  const lb = $('#lightbox');
+  $('#lb-close').addEventListener('click', () => lb.classList.remove('show'));
+  lb.addEventListener('click', (e) => { if (e.target === lb) lb.classList.remove('show'); });
+  $('#feed').addEventListener('click', (e) => {
+    const card = e.target.closest('[data-media]');
+    if (!card) return;
+    const kind = card.dataset.media;
+    const label = card.querySelector('.label')?.textContent || kind;
+    $('#lb-body').innerHTML = `<div style="font-family:var(--mono);font-size:13px;color:var(--fg);"><b>${escapeHtml(label)}</b></div>`;
+    $('#lb-note').textContent = '当前 profile_messages 表只存文本标记，没有媒体 URL。需要新增 /api/peer?action=media 代理后才能渲染实际媒体。';
+    lb.classList.add('show');
+  });
 }
 
 // ---------- Boot ----------
@@ -856,10 +1649,39 @@ function clearAndReload() {
   renderProfileList();
   renderTopbar();
 
-  await pull();
+  await initialLoad();
   setInterval(pull, 2000);
 
-  $('#raw').addEventListener('change', clearAndReload);
+  // Feed scroll handlers
+  const feed = $('#feed');
+  let scrollTick = false;
+  feed.addEventListener('scroll', () => {
+    if (scrollTick) return;
+    scrollTick = true;
+    requestAnimationFrame(() => {
+      scrollTick = false;
+      updateStickyDay();
+      updateJumpButtons();
+      // Re-window if we scrolled far from current render center
+      scheduleRender();
+    });
+  });
+  $('#jump-bottom').addEventListener('click', () => {
+    state.atBottom = true;
+    feed.scrollTo({ top: feed.scrollHeight, behavior: 'smooth' });
+    renderFeed();
+  });
+  $('#jump-top').addEventListener('click', () => {
+    state.atBottom = false;
+    feed.scrollTo({ top: 0, behavior: 'smooth' });
+    renderFeed();
+  });
+
+  $('#raw').addEventListener('change', () => {
+    invalidateVisible();
+    recomputeSearchHits();
+    renderFeed();
+  });
   $('#refresh-btn').addEventListener('click', clearAndReload);
   $('#compose-send').addEventListener('click', intervene);
   $('#compose').addEventListener('keydown', (e) => {
@@ -872,10 +1694,12 @@ function clearAndReload() {
     await logout();
     window.location.href = '/peer';
   });
+
+  setupSearch();
+  setupLightbox();
 })();
 </script>
 
 </body>
 </html>
-</content>
 </invoke>
