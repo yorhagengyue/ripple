@@ -1504,7 +1504,7 @@ async function loadStory() {
 // -------------------- Chat vitals panel (MCP-fetched, user-toggled) --------------------
 // Shows the same vitals table pipeline.html shows in try-it-live, but inline
 // in the chat. User must click "Show my vitals" (opt-in). Once open, the table
-// fetches live via /api/mcp → Workato MCP → Supabase. "AI analyze" button
+// fetches live via /api/mcp → Supabase. "AI analyze" button
 // forwards the snapshot to Kimi for a short observational read.
 (function initChatVitals() {
   const root      = document.getElementById('chatVitals');
@@ -1656,7 +1656,7 @@ async function loadStory() {
   }
 
   async function fetchVitals() {
-    rowsEl.innerHTML = `<div class="chat-vitals__empty">calling Workato MCP…</div>`;
+    rowsEl.innerHTML = `<div class="chat-vitals__empty">calling Ripple MCP…</div>`;
     fetchedEl.textContent = '…';
     latencyEl.textContent = '…';
     analyzeBtn.disabled = true;
