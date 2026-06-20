@@ -66,6 +66,7 @@ export default defineConfig(async ({ mode }) => {
     chatMod, nudgeMod, historyMod, explainMod, subscribeMod, haeMod, mcpServerMod, analyzeMod,
     discordCurrentMod,
     peerMod,
+    baselineMod,
   ] = await Promise.all([
     import(pathToFileURL(resolve(__dirname, 'api/chat.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/chat/nudge.js')).href),
@@ -77,6 +78,7 @@ export default defineConfig(async ({ mode }) => {
     import(pathToFileURL(resolve(__dirname, 'api/chat/analyze-vitals.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/discord/current.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/peer.js')).href),
+    import(pathToFileURL(resolve(__dirname, 'api/baseline/recompute.js')).href),
   ]);
 
   return {
@@ -126,6 +128,7 @@ export default defineConfig(async ({ mode }) => {
           server.middlewares.use('/api/mcp',            vercelToVite(mcpServerMod.default));
           server.middlewares.use('/api/discord/current',  vercelToVite(discordCurrentMod.default));
           server.middlewares.use('/api/peer',           vercelToVite(peerMod.default));
+          server.middlewares.use('/api/baseline/recompute', vercelToVite(baselineMod.default));
         },
       },
     ],

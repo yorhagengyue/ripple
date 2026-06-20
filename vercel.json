@@ -25,5 +25,8 @@
         { "key": "Cache-Control", "value": "no-store, must-revalidate" }
       ]
     }
+  ],
+  "crons": [
+    { "path": "/api/baseline/recompute", "schedule": "0 18 * * *" }
   ]
 }
