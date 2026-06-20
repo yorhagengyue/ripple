@@ -1439,18 +1439,18 @@ async function loadStory() {
       statusEl.className = 'mv';
       latencyEl.textContent = '…';
       recipeEl.textContent = RECIPE_MAP[tool] || tool;
-      resultEl.textContent = 'calling Workato…';
+      resultEl.textContent = 'calling Ripple MCP…';
 
       const t0 = Date.now();
       try {
-        const r = await fetch('/api/mcp/call', {
+        const r = await fetch('/api/mcp', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ tool, arguments: args }),
         });
         const data = await r.json();
         const elapsed = data.elapsed_ms ?? (Date.now() - t0);
-        statusEl.textContent = data.ok ? `200 OK` : `${data.workato_status || r.status} ERR`;
+        statusEl.textContent = data.ok ? `200 OK` : `${r.status} ERR`;
         statusEl.className = 'mv ' + (data.ok ? 'is-ok' : 'is-err');
         latencyEl.textContent = `${elapsed} ms`;
         // Prefer the already-unwrapped payload, fall back to rpc envelope
@@ -1504,7 +1504,7 @@ async function loadStory() {
 // -------------------- Chat vitals panel (MCP-fetched, user-toggled) --------------------
 // Shows the same vitals table pipeline.html shows in try-it-live, but inline
 // in the chat. User must click "Show my vitals" (opt-in). Once open, the table
-// fetches live via /api/mcp/call → Workato MCP → Supabase. "AI analyze" button
+// fetches live via /api/mcp → Workato MCP → Supabase. "AI analyze" button
 // forwards the snapshot to Kimi for a short observational read.
 (function initChatVitals() {
   const root      = document.getElementById('chatVitals');
@@ -1666,7 +1666,7 @@ async function loadStory() {
     const t0 = Date.now();
     try {
       const [mcpRes, baseline] = await Promise.all([
-        fetch('/api/mcp/call', {
+        fetch('/api/mcp', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ tool: 'get_current_vitals', arguments: { user_id: 'tommychen030607' } }),
@@ -1677,7 +1677,7 @@ async function loadStory() {
       const elapsed = mcpRes.elapsed_ms ?? (Date.now() - t0);
       latencyEl.textContent = `${elapsed} ms`;
       fetchedEl.textContent = new Date().toLocaleTimeString('en-SG', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
-      const vitals = mcpRes?.unwrapped?.result?.vitals || [];
+      const vitals = mcpRes?.unwrapped?.metrics || [];
       lastVitals = vitals;
       renderRows(vitals);
       analyzeBtn.disabled = !vitals.length;

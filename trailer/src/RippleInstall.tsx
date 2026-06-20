@@ -36,7 +36,7 @@ const Host = styled.span`
 `;
 
 const Command =
-  'claude mcp add ripple -- npx -y mcp-remote https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb';
+  'claude mcp add ripple -- npx -y mcp-remote https://ripple-wellness.vercel.app/api/mcp';
 
 export const RippleInstall: React.FC = () => {
   const frame = useCurrentFrame();
