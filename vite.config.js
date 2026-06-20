@@ -64,8 +64,6 @@ export default defineConfig(async ({ mode }) => {
   // Dynamic import so the handlers are resolved once at config-load.
   const [
     chatMod, nudgeMod, historyMod, explainMod, subscribeMod, haeMod, mcpCallMod, analyzeMod,
-    demoReasoningMod,
-    demoThinkMod,
     discordCurrentMod,
     peerMod,
   ] = await Promise.all([
@@ -77,8 +75,6 @@ export default defineConfig(async ({ mode }) => {
     import(pathToFileURL(resolve(__dirname, 'api/ingest/hae.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/mcp/call.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/chat/analyze-vitals.js')).href),
-    import(pathToFileURL(resolve(__dirname, 'api/chat/demo-reasoning.js')).href),
-    import(pathToFileURL(resolve(__dirname, 'api/chat/demo-think.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/discord/current.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/peer.js')).href),
   ]);
@@ -124,8 +120,6 @@ export default defineConfig(async ({ mode }) => {
           server.middlewares.use('/api/chat/history',   vercelToVite(historyMod.default));
           server.middlewares.use('/api/chat/explain',         vercelToVite(explainMod.default));
           server.middlewares.use('/api/chat/analyze-vitals',  vercelToVite(analyzeMod.default));
-          server.middlewares.use('/api/chat/demo-reasoning',  vercelToVite(demoReasoningMod.default));
-          server.middlewares.use('/api/chat/demo-think',        vercelToVite(demoThinkMod.default));
           server.middlewares.use('/api/chat/subscribe',       vercelToVite(subscribeMod.default));
           server.middlewares.use('/api/chat',           vercelToVite(chatMod.default));
           server.middlewares.use('/api/ingest/hae',     vercelToVite(haeMod.default));
