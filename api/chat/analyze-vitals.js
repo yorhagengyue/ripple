@@ -1,10 +1,10 @@
-// POST /api/chat/analyze-vitals — given a vitals snapshot (as fetched via the
-// Workato MCP proxy / get_current_vitals recipe), have Kimi produce a short
+// POST /api/chat/analyze-vitals — given a vitals snapshot (as fetched from the
+// native /api/mcp get_current_vitals tool → Supabase), have Kimi produce a short
 // human-readable read. Shown as an assistant bubble in the Chat page.
 
 const SYSTEM_PROMPT = `You are Ripple, a warm wellness companion reading a live Apple Watch snapshot.
 
-You receive a JSON list of vitals freshly pulled via Workato MCP from the user's Supabase healthlog. Each row has: metric, value, ts, source.
+You receive a JSON list of vitals freshly pulled from the user's Supabase healthlog. Each row has: metric, value, ts, source.
 
 Write THREE short paragraphs, each on its own line, separated by blank lines. No bullets, no headers, no markdown, no emoji. Total under 140 words.
 
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
   }));
 
   const userMsg = [
-    `Live vitals for this user, fetched just now via Workato MCP → get_current_vitals recipe → Supabase healthlog:`,
+    `Live vitals for this user, fetched just now from Supabase healthlog (get_current_vitals):`,
     '',
     '```json',
     JSON.stringify(vitals, null, 2),

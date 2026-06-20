@@ -135,7 +135,7 @@ console.log(`  → source="Ripple demo · narrative" now in healthlog: ${cr}`);
 
 // Sanity: make sure MCP still returns real Apple Watch for today
 console.log('\n→ Verifying MCP get_current_vitals still returns REAL data, not synthetic…');
-const mcp = await fetch('https://1720.apim.mcp.trial.workato.com?wkt_token=3d8ed8f1c0fd618cca590eaaf62759d36d29e21d8e0a4eb5cdaa6a02493bb7cb', {
+const mcp = await fetch('https://ripple-wellness.vercel.app/api/mcp', {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
   body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call',

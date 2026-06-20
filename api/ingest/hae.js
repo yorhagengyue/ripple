@@ -246,62 +246,8 @@ export default async function handler(req, res) {
     }
   }
 
-  // Forward aggregated clean rows to Workato (Recipe 1) so Workato is in the
-  // real data write path. This is the "clean batch" contract — one payload
-  // shaped as { user_id, source, received_at, rows: [ {metric, value, ts, ...} ] }
-  // so the recipe's foreach can map each row's fields to Supabase directly
-  // without HAE's Avg/Qty/nested-sample ambiguity.
-  //
-  // Enabled by default; set FORWARD_CLEAN_TO_WORKATO=0 to disable.
-  let workatoStatus = null;
-  const WORKATO_WEBHOOK = process.env.WORKATO_HAE_WEBHOOK
-    || 'https://webhooks.trial.workato.com/webhooks/rest/75c7e434-bc99-44b9-99e7-705948d0a35d/ripple-health-data';
-  if (process.env.FORWARD_CLEAN_TO_WORKATO !== '0' && rows.length) {
-    try {
-      const cleanBatch = {
-        schema: 'ripple.clean.v1',
-        user_id: DEMO_USER,
-        source: 'HealthAutoExport',
-        received_at: new Date().toISOString(),
-        rows_count: rows.length,
-        metrics_summary: perMetricSummary,
-        // Flatten each row to a shallow object so Workato's sample-inferred
-        // schema gives first-class pills for every field.
-        rows: rows.map((r) => ({
-          user_id: r.user_id,
-          metric: r.metric,
-          value: r.value,
-          min_val: r.min_val,
-          max_val: r.max_val,
-          source: r.source,
-          ts: r.ts,
-          samples_count: r.extra?.samples_count ?? null,
-        })),
-      };
-      const fw = await fetch(WORKATO_WEBHOOK, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(cleanBatch),
-      });
-      workatoStatus = `clean-batch ${fw.status} rows=${rows.length}`;
-    } catch (e) {
-      workatoStatus = 'clean-batch error: ' + String(e).slice(0, 120);
-    }
-  } else if (process.env.FORWARD_TO_WORKATO === '1') {
-    // Legacy raw-HAE forwarding (kept for backwards compat)
-    try {
-      const fw = await fetch(WORKATO_WEBHOOK, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      workatoStatus = `raw-hae ${fw.status}`;
-    } catch (e) {
-      workatoStatus = 'raw-hae error: ' + String(e).slice(0, 120);
-    }
-  } else {
-    workatoStatus = 'disabled (no rows or FORWARD_CLEAN_TO_WORKATO=0)';
-  }
+  // Workato HAE forwarding removed — Ripple is fully native (YOR-78). The
+  // Supabase upsert above is the single source of truth; no external forward.
 
   res.status(inserted || !rows.length ? 200 : 502).json({
     ok: inserted > 0 || !rows.length,
@@ -309,7 +255,6 @@ export default async function handler(req, res) {
     rows_inserted: inserted,
     metrics: perMetricSummary,
     supabase_error: supabaseError,
-    forwarded_to_workato: workatoStatus,
     received_at: new Date().toISOString(),
   });
 }
