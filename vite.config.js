@@ -63,7 +63,7 @@ export default defineConfig(async ({ mode }) => {
 
   // Dynamic import so the handlers are resolved once at config-load.
   const [
-    chatMod, nudgeMod, historyMod, explainMod, subscribeMod, haeMod, mcpCallMod, analyzeMod,
+    chatMod, nudgeMod, historyMod, explainMod, subscribeMod, haeMod, mcpCallMod, mcpServerMod, analyzeMod,
     discordCurrentMod,
     peerMod,
   ] = await Promise.all([
@@ -74,6 +74,7 @@ export default defineConfig(async ({ mode }) => {
     import(pathToFileURL(resolve(__dirname, 'api/chat/subscribe.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/ingest/hae.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/mcp/call.js')).href),
+    import(pathToFileURL(resolve(__dirname, 'api/mcp.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/chat/analyze-vitals.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/discord/current.js')).href),
     import(pathToFileURL(resolve(__dirname, 'api/peer.js')).href),
@@ -124,6 +125,7 @@ export default defineConfig(async ({ mode }) => {
           server.middlewares.use('/api/chat',           vercelToVite(chatMod.default));
           server.middlewares.use('/api/ingest/hae',     vercelToVite(haeMod.default));
           server.middlewares.use('/api/mcp/call',       vercelToVite(mcpCallMod.default));
+          server.middlewares.use('/api/mcp',            vercelToVite(mcpServerMod.default));
           server.middlewares.use('/api/discord/current',  vercelToVite(discordCurrentMod.default));
           server.middlewares.use('/api/peer',           vercelToVite(peerMod.default));
         },
