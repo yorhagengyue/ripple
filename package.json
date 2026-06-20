@@ -1,9 +1,9 @@
 {
-  "name": "toffeemoon-design-system",
+  "name": "ripple",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Toffeemoon Design System — Yuqin portfolio + CommenHers reference kits.",
+  "description": "Ripple — real-time wellness agent. Apple Watch vitals → Workato → Supabase, re-exposed over MCP for human chat and AI agents.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

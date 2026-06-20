@@ -7,7 +7,7 @@
 //   - every completed activity session → discord_sessions
 //
 // Run:
-//   cd "/Users/gengyue/Desktop/Toffeemoon Design System"
+//   cd <repo root>
 //   node scripts/discord-listener/listener.mjs
 //
 // To run as a daemon, see scripts/discord-listener/com.ripple.discord-listener.plist

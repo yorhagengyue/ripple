@@ -1,8 +1,7 @@
-/* Toffeemoon Design System — Foundations
- * Covers two products under Chen Yu Fei's umbrella:
- * - Yuqin Chen Portfolio (warm editorial, caramel + cream)
- * - CommenHers (sustainable fashion, fresh green + bone white)
- * Both share a calm, minimal temperament with generous whitespace.
+/* Ripple — Foundations
+ * Shared color + type tokens for the Ripple app and the peer console.
+ * Ripple uses the warm editorial register (vermilion accent on cream).
+ * A few legacy palette tokens remain for backwards compatibility.
  */
 
 :root {

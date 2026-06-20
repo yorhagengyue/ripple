@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import { pathToFileURL } from 'url';
 import react from '@vitejs/plugin-react';
 
-// Toffeemoon Design System — Vite config
+// Ripple — Vite config
 // Dev server mounts each api/*.js Vercel handler behind its matching URL path,
 // so local dev and production share the same source of truth for backend logic.
 
@@ -101,16 +101,6 @@ export default defineConfig(async ({ mode }) => {
       emptyOutDir: true,
       rollupOptions: {
         input: {
-          // Toffeemoon design-system entries (root index.html moved — Ripple takes /)
-          designSystem: resolve(__dirname, 'design-system.html'),
-          yuqin:      resolve(__dirname, 'ui_kits/yuqin/demo.html'),
-          commenhers: resolve(__dirname, 'ui_kits/commenhers/demo.html'),
-          brand:      resolve(__dirname, 'preview/brand.html'),
-          colors:     resolve(__dirname, 'preview/colors.html'),
-          components: resolve(__dirname, 'preview/components.html'),
-          spacing:    resolve(__dirname, 'preview/spacing.html'),
-          type:       resolve(__dirname, 'preview/type.html'),
-
           // Ripple · multi-page
           ripple:          resolve(__dirname, 'ripple/index.html'),
           rippleTimeline:  resolve(__dirname, 'ripple/timeline.html'),
