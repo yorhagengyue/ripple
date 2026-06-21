@@ -84,7 +84,7 @@ async function today(user) {
 export default async function handler(req, res) {
   res.setHeader('cache-control', 'no-store');
   const q = req.query || {};
-  const user = q.user || 'tommychen030607';
+  const user = q.user || 'demo';
   const action = q.action || 'current';
   try {
     let out;

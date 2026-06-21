@@ -110,7 +110,7 @@ document.querySelectorAll('.hero-name .line').forEach(line => {
 
 const SUPA_URL = import.meta.env?.VITE_SUPABASE_URL || '';
 const SUPA_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
-const DEMO_USER = 'tommychen030607';
+const DEMO_USER = 'demo';
 
 const METRIC_LABELS = {
   heart_rate:         { name: 'Heart rate',            desc: 'beats per minute, on average',         unit: 'bpm',  fmt: v => v.toFixed(0) },
@@ -1670,7 +1670,7 @@ async function loadStory() {
   async function fetchBaseline() {
     // Server-side demo read-proxy (service-role), not a direct anon read.
     try {
-      const r = await fetch(`/api/mcp?path=${encodeURIComponent('baseline?user_id=eq.tommychen030607&select=metric,baseline_mean,last_7d_mean,deviation_pct,status')}`);
+      const r = await fetch(`/api/mcp?path=${encodeURIComponent('baseline?user_id=eq.demo&select=metric,baseline_mean,last_7d_mean,deviation_pct,status')}`);
       if (!r.ok) return {};
       const arr = await r.json();
       const map = {};
@@ -1693,7 +1693,7 @@ async function loadStory() {
         fetch('/api/mcp', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ tool: 'get_current_vitals', arguments: { user_id: 'tommychen030607' } }),
+          body: JSON.stringify({ tool: 'get_current_vitals', arguments: { user_id: 'demo' } }),
         }).then((r) => r.json()),
         fetchBaseline(),
       ]);

@@ -4,7 +4,7 @@
 const URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const KEY = process.env.SUPABASE_SECRET_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-export const DEMO_USER = 'tommychen030607';
+export const DEMO_USER = 'demo'; // public-demo user (synthetic copy of vitals); real users come from auth (M2-3)
 
 export async function sbInsert(table, row) {
   if (!URL || !KEY) return { ok: false, error: 'Supabase env not configured' };
