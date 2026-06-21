@@ -72,12 +72,34 @@ function cors(res) {
   res.setHeader('access-control-allow-headers', 'content-type');
 }
 
+// Whitelisted read-proxy for the public demo dashboard. Only healthlog/baseline
+// of the demo user, read-only, via the service-role key (sbQuery). Everything
+// else is rejected — sensitive tables remain RLS-blocked from the browser.
+const DEMO_READ = /^(healthlog|baseline)\?/;
+async function demoRead(path, res) {
+  res.setHeader('cache-control', 'no-store');
+  if (!DEMO_READ.test(path) || !path.includes(`user_id=eq.${DEMO_USER}`)) {
+    res.status(403).json({ error: 'demo read-proxy: only healthlog/baseline for the demo user' });
+    return;
+  }
+  const i = path.indexOf('?');
+  const data = await sbQuery(path.slice(0, i), path.slice(i + 1));
+  res.status(200).json(data ?? []);
+}
+
 export default async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
 
-  // GET → discovery / health
+  // GET → whitelisted demo read-proxy (?path=) or discovery/health.
+  // The public homepage/timeline used to read Supabase directly with the anon
+  // key; that leaked every table. Now those reads route here and are served
+  // server-side (service-role) ONLY for healthlog/baseline of the demo user —
+  // sensitive tables (location_log, alert_sessions, intervention, ...) stay
+  // blocked by RLS. Replace with per-user auth in M2.
   if (req.method === 'GET') {
+    const path = req.query?.path;
+    if (path) return demoRead(String(path), res);
     res.status(200).json({
       server: 'ripple',
       version: '0.1.0',

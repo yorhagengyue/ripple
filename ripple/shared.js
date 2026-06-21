@@ -155,11 +155,11 @@ function normalizeMetric(m) {
 }
 
 async function sbGet(path) {
-  if (!SUPA_URL || !SUPA_KEY) return null;
+  // Routes through the server-side demo read-proxy (/api/mcp?path=) instead of
+  // hitting Supabase directly with the public anon key — keeps RLS-protected
+  // tables off the browser. Server whitelists healthlog/baseline for the demo user.
   try {
-    const res = await fetch(`${SUPA_URL}/rest/v1/${path}`, {
-      headers: { apikey: SUPA_KEY, authorization: `Bearer ${SUPA_KEY}` },
-    });
+    const res = await fetch(`/api/mcp?path=${encodeURIComponent(path)}`);
     if (!res.ok) return null;
     return res.json();
   } catch { return null; }
@@ -1640,13 +1640,9 @@ async function loadStory() {
   }
 
   async function fetchBaseline() {
-    // Direct Supabase query — lightweight, no MCP round-trip
-    const SUPA = 'https://ubuamehrsvyrbnoxtavk.supabase.co';
-    const KEY  = 'sb_publishable_6sOMp-mMZStZP-lrDMtRqA_QjZ7N3Ev';
+    // Server-side demo read-proxy (service-role), not a direct anon read.
     try {
-      const r = await fetch(`${SUPA}/rest/v1/baseline?user_id=eq.tommychen030607&select=metric,baseline_mean,last_7d_mean,deviation_pct,status`, {
-        headers: { apikey: KEY, authorization: `Bearer ${KEY}` },
-      });
+      const r = await fetch(`/api/mcp?path=${encodeURIComponent('baseline?user_id=eq.tommychen030607&select=metric,baseline_mean,last_7d_mean,deviation_pct,status')}`);
       if (!r.ok) return {};
       const arr = await r.json();
       const map = {};
