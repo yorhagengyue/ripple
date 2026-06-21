@@ -30,9 +30,15 @@ export async function getAccessToken() {
 export function sendOtp(email) {
   return supa().auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
 }
-// step 2: verify the code → establishes a session.
-export function verifyOtp(email, token) {
-  return supa().auth.verifyOtp({ email, token, type: 'email' });
+// step 2: verify the code → establishes a session. Tries the OTP-login type
+// first ('email'), then the new-signup type ('signup') so both flows work.
+export async function verifyOtp(email, token) {
+  let r = await supa().auth.verifyOtp({ email, token, type: 'email' });
+  if (r.error) {
+    const r2 = await supa().auth.verifyOtp({ email, token, type: 'signup' });
+    if (!r2.error) return r2;
+  }
+  return r;
 }
 export function signOut() {
   return supa().auth.signOut();
