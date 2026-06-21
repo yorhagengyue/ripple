@@ -9,6 +9,7 @@
     { "source": "/pipeline",      "destination": "/ripple/pipeline.html" },
     { "source": "/chat",          "destination": "/ripple/chat.html" },
     { "source": "/demo",          "destination": "/ripple/demo.html" },
+    { "source": "/login",         "destination": "/ripple/login.html" },
     { "source": "/peer",          "destination": "/peer/index.html" },
     { "source": "/peer/u/:profile", "destination": "/peer/chat.html" }
   ],

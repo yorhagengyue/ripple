@@ -2,6 +2,8 @@
 // native /api/mcp get_current_vitals tool → Supabase), have Kimi produce a short
 // human-readable read. Shown as an assistant bubble in the Chat page.
 
+import { costKey, checkCostGuard, recordTokens } from '../_lib/cost-guard.js';
+
 const SYSTEM_PROMPT = `You are Ripple, a warm wellness companion reading a live Apple Watch snapshot.
 
 You receive a JSON list of vitals freshly pulled from the user's Supabase healthlog. Each row has: metric, value, ts, source.
@@ -57,6 +59,9 @@ export default async function handler(req, res) {
 
   const started = Date.now();
   try {
+    const _ckey = costKey(req);
+    const _g = await checkCostGuard(_ckey, 'analyze');
+    if (!_g.ok) { res.status(429).json({ error: 'rate_limited', reason: _g.reason }); return; }
     const upstream = await fetch('https://api.moonshot.cn/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -81,6 +86,7 @@ export default async function handler(req, res) {
     }
 
     const data = await upstream.json();
+    recordTokens(_ckey, data?.usage?.total_tokens);
     const content = data?.choices?.[0]?.message?.content ?? '';
     res.status(200).json({
       content,

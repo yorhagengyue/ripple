@@ -1336,6 +1336,34 @@ async function loadStory() {
   }
 })();
 
+// -------------------- Auth nav control (M2-6) --------------------
+(function initAuthNav() {
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+  const el = document.createElement('a');
+  el.className = 'nav-auth';
+  el.href = '/login';
+  el.textContent = '登录';
+  nav.appendChild(el);
+  import('./auth.js').then((A) => {
+    const render = (session) => {
+      const u = session && session.user;
+      if (u) {
+        el.textContent = '● ' + String(u.email || 'account').split('@')[0];
+        el.href = '#';
+        el.title = 'Sign out';
+        el.onclick = async (e) => { e.preventDefault(); await A.signOut(); location.reload(); };
+      } else {
+        el.textContent = '登录';
+        el.href = '/login';
+        el.onclick = null;
+      }
+    };
+    A.getSession().then(render);
+    A.onAuth(render);
+  }).catch(() => {});
+})();
+
 // -------------------- PWA: service worker + install prompt --------------------
 (() => {
   // Register the service worker at root scope (covers every Ripple page).

@@ -3,6 +3,7 @@
 // Mirrored by the Vite dev middleware in vite.config.js for local dev parity.
 
 import { logMessage, sbQuery, DEMO_USER } from './_lib/supabase.js';
+import { costKey, checkCostGuard, recordTokens } from './_lib/cost-guard.js';
 
 const KIMI_SYSTEM_PROMPT = `You are Ripple, a warm and empathetic wellness companion agent. The user's smartwatch feed and 7-day-vs-30-day baseline are provided to you below — you CAN read them. When the user asks about their heart rate or any vital, quote the actual number from the data block, do not deflect.
 
@@ -116,6 +117,12 @@ export default async function handler(req, res) {
   const vitalsBlock = await buildVitalsBlock();
   const userContent = `${vitalsBlock}\n\nUser just said: ${message}`;
 
+  const _ckey = costKey(req);
+  {
+    const _g = await checkCostGuard(_ckey, 'chat');
+    if (!_g.ok) { res.status(429).json({ error: 'rate_limited', reason: _g.reason }); return; }
+  }
+
   try {
     const upstream = await fetch('https://api.moonshot.cn/v1/chat/completions', {
       method: 'POST',
@@ -146,6 +153,7 @@ export default async function handler(req, res) {
     }
 
     const data = await upstream.json();
+    recordTokens(_ckey, data?.usage?.total_tokens);
     const raw = data?.choices?.[0]?.message?.content ?? '';
     let parsed;
     try { parsed = JSON.parse(raw); }
