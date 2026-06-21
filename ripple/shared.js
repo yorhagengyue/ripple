@@ -108,6 +108,29 @@ document.querySelectorAll('.hero-name .line').forEach(line => {
 //  DATA LAYER — Supabase + Kimi
 // ============================================================
 
+// Attach the Supabase JWT to same-origin /api/* requests when logged in (M2-3),
+// so endpoints resolve the caller to their own user (else the public 'demo').
+(function patchApiAuth() {
+  const orig = window.fetch.bind(window);
+  let authMod;
+  window.fetch = async (input, init) => {
+    init = init || {};
+    try {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      if (url.startsWith('/api/')) {
+        if (authMod === undefined) authMod = await import('./auth.js').catch(() => null);
+        const tok = authMod ? await authMod.getAccessToken().catch(() => null) : null;
+        if (tok) {
+          const headers = new Headers((init.headers) || (typeof input !== 'string' && input.headers) || {});
+          if (!headers.has('authorization')) headers.set('authorization', 'Bearer ' + tok);
+          init = { ...init, headers };
+        }
+      }
+    } catch { /* fall through */ }
+    return orig(input, init);
+  };
+})();
+
 const SUPA_URL = import.meta.env?.VITE_SUPABASE_URL || '';
 const SUPA_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
 const DEMO_USER = 'demo';

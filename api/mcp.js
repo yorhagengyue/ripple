@@ -1,46 +1,36 @@
-// /api/mcp — native MCP server (replaces the Workato MCP proxy at /api/mcp/call).
+// /api/mcp — native MCP server (data spine) + the public-demo read proxy.
 //
-// Exposes Ripple's wellness data spine over JSON-RPC 2.0 so any MCP client
-// (Claude Desktop, Cursor, Codex, …) can read it directly from Supabase —
-// no Workato in the path. Also accepts a simple { tool, arguments } body so the
-// in-browser /pipeline "Try it live" demo keeps working (back-compat with the
-// old proxy's response shape: { ok, tool, unwrapped }).
+// Exposes Ripple's wellness data over JSON-RPC 2.0 (any MCP client) and a simple
+// { tool, arguments } browser shape. The user is ALWAYS derived from the bearer
+// JWT via userOr() — never from client-supplied args/path (that was the IDOR).
+// Logged-out callers resolve to the public 'demo' user; logged-in callers get
+// their own data. Reads are service-role; sensitive tables stay RLS-blocked.
 //
-// JSON-RPC methods: initialize · tools/list · tools/call · ping
-// Tools: get_current_vitals(user_id?) · get_baseline_deviation(user_id?, metric?)
-//
-// NOTE: single-user demo — reads default to DEMO_USER. Per-user auth lands in M2.
+// JSON-RPC: initialize · tools/list · tools/call · ping
+// Tools: get_current_vitals · get_baseline_deviation(metric?)
 
-import { sbQuery, DEMO_USER } from './_lib/supabase.js';
+import { sbQuery } from './_lib/supabase.js';
+import { userOr } from './_lib/jwt.js';
 
 const TOOLS = [
   {
     name: 'get_current_vitals',
     description:
-      'Latest reading per health metric for a user (heart_rate, hrv_sdnn, resting_heart_rate, respiratory_rate, spo2, sleep_hours, sleep_efficiency, step_count, active_energy), straight from Supabase.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        user_id: { type: 'string', description: 'Ripple user id (defaults to the demo user)' },
-      },
-    },
+      'Latest reading per health metric for the authenticated user (heart_rate, hrv_sdnn, resting_heart_rate, respiratory_rate, spo2, sleep_hours, sleep_efficiency, step_count, active_energy), straight from Supabase.',
+    inputSchema: { type: 'object', properties: {} },
   },
   {
     name: 'get_baseline_deviation',
     description:
-      "Per-metric personal baseline (7d/30d mean + std) and how the latest 7-day mean deviates from it. Optionally filter to one metric.",
+      "Per-metric personal baseline (7d/30d mean + std) for the authenticated user and how the latest 7-day mean deviates from it. Optionally filter to one metric.",
     inputSchema: {
       type: 'object',
-      properties: {
-        user_id: { type: 'string', description: 'Ripple user id (defaults to the demo user)' },
-        metric: { type: 'string', description: 'Optional metric to filter (e.g. hrv_sdnn)' },
-      },
+      properties: { metric: { type: 'string', description: 'Optional metric to filter (e.g. hrv_sdnn)' } },
     },
   },
 ];
 
-async function get_current_vitals(args) {
-  const user = String(args.user_id || DEMO_USER);
+async function get_current_vitals(user) {
   const rows = await sbQuery(
     'v_latest_per_metric',
     `user_id=eq.${encodeURIComponent(user)}&select=metric,value,ts,min_val,max_val,source&order=metric`,
@@ -48,42 +38,45 @@ async function get_current_vitals(args) {
   return { user_id: user, metrics: rows || [], count: Array.isArray(rows) ? rows.length : 0 };
 }
 
-async function get_baseline_deviation(args) {
-  const user = String(args.user_id || DEMO_USER);
+async function get_baseline_deviation(user, metric) {
   let qs =
     `user_id=eq.${encodeURIComponent(user)}` +
     `&select=metric,baseline_mean,baseline_std,last_7d_mean,deviation,deviation_pct,status,updated_at&order=metric`;
-  if (args.metric) qs += `&metric=eq.${encodeURIComponent(String(args.metric))}`;
+  if (metric) qs += `&metric=eq.${encodeURIComponent(String(metric))}`;
   const rows = await sbQuery('baseline', qs);
   return { user_id: user, baselines: rows || [], count: Array.isArray(rows) ? rows.length : 0 };
 }
 
-const HANDLERS = { get_current_vitals, get_baseline_deviation };
+// name → fn(user, args). args.user_id is intentionally ignored (anti-IDOR).
+const HANDLERS = {
+  get_current_vitals: (user) => get_current_vitals(user),
+  get_baseline_deviation: (user, args) => get_baseline_deviation(user, args?.metric),
+};
 
-async function runTool(name, args) {
+async function runTool(name, user, args) {
   const fn = HANDLERS[name];
   if (!fn) throw { code: -32602, message: `unknown tool: ${name}` };
-  return fn(args && typeof args === 'object' ? args : {});
+  return fn(user, args && typeof args === 'object' ? args : {});
 }
 
 function cors(res) {
   res.setHeader('access-control-allow-origin', '*');
   res.setHeader('access-control-allow-methods', 'POST, GET, OPTIONS');
-  res.setHeader('access-control-allow-headers', 'content-type');
+  res.setHeader('access-control-allow-headers', 'content-type, authorization');
 }
 
-// Whitelisted read-proxy for the public demo dashboard. Only healthlog/baseline
-// of the demo user, read-only, via the service-role key (sbQuery). Everything
-// else is rejected — sensitive tables remain RLS-blocked from the browser.
-const DEMO_READ = /^(healthlog|baseline)\?/;
-async function demoRead(path, res) {
+// Read-proxy for the dashboard. The user_id is FORCED to the resolved user
+// (authed UUID, else 'demo') — any client-supplied user_id in the path is
+// stripped. Only healthlog/baseline, read-only via service-role.
+const READ_TABLES = /^(healthlog|baseline)\?(.*)$/;
+async function dataRead(path, req, res) {
   res.setHeader('cache-control', 'no-store');
-  if (!DEMO_READ.test(path) || !path.includes(`user_id=eq.${DEMO_USER}`)) {
-    res.status(403).json({ error: 'demo read-proxy: only healthlog/baseline for the demo user' });
-    return;
-  }
-  const i = path.indexOf('?');
-  const data = await sbQuery(path.slice(0, i), path.slice(i + 1));
+  const m = READ_TABLES.exec(path);
+  if (!m) { res.status(403).json({ error: 'read-proxy: only healthlog / baseline' }); return; }
+  const user = await userOr(req); // authed UUID, else 'demo'
+  const cleaned = m[2].split('&').filter((p) => p && !p.startsWith('user_id=')).join('&');
+  const qs = `user_id=eq.${encodeURIComponent(user)}` + (cleaned ? '&' + cleaned : '');
+  const data = await sbQuery(m[1], qs);
   res.status(200).json(data ?? []);
 }
 
@@ -91,15 +84,9 @@ export default async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
 
-  // GET → whitelisted demo read-proxy (?path=) or discovery/health.
-  // The public homepage/timeline used to read Supabase directly with the anon
-  // key; that leaked every table. Now those reads route here and are served
-  // server-side (service-role) ONLY for healthlog/baseline of the demo user —
-  // sensitive tables (location_log, alert_sessions, intervention, ...) stay
-  // blocked by RLS. Replace with per-user auth in M2.
   if (req.method === 'GET') {
     const path = req.query?.path;
-    if (path) return demoRead(String(path), res);
+    if (path) return dataRead(String(path), req, res);
     res.status(200).json({
       server: 'ripple',
       version: '0.1.0',
@@ -114,13 +101,14 @@ export default async function handler(req, res) {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
   if (!body || typeof body !== 'object') body = {};
 
-  // --- Back-compat: simple browser shape { tool, arguments } (old /api/mcp/call) ---
+  const ruser = await userOr(req); // authed UUID, else 'demo' — never from client input
+
+  // --- Back-compat: simple browser shape { tool, arguments } ---
   if (body.tool && !body.method) {
     const tool = String(body.tool).trim();
-    const args = (body.arguments && typeof body.arguments === 'object') ? body.arguments : {};
     const started = Date.now();
     try {
-      const data = await runTool(tool, args);
+      const data = await runTool(tool, ruser, body.arguments);
       res.status(200).json({ ok: true, tool, source: 'native', elapsed_ms: Date.now() - started, unwrapped: data });
     } catch (e) {
       res.status(e?.code === -32602 ? 400 : 500).json({ ok: false, tool, error: e?.message || String(e) });
@@ -128,23 +116,19 @@ export default async function handler(req, res) {
     return;
   }
 
-  // --- JSON-RPC 2.0 (real MCP clients) ---
+  // --- JSON-RPC 2.0 ---
   const { id = null, method, params = {} } = body;
   const reply = (payload) => res.status(200).json({ jsonrpc: '2.0', id, ...payload });
 
   try {
     if (method === 'initialize') {
       return reply({
-        result: {
-          protocolVersion: '2024-11-05',
-          capabilities: { tools: {} },
-          serverInfo: { name: 'ripple', version: '0.1.0' },
-        },
+        result: { protocolVersion: '2024-11-05', capabilities: { tools: {} }, serverInfo: { name: 'ripple', version: '0.1.0' } },
       });
     }
     if (method === 'tools/list') return reply({ result: { tools: TOOLS } });
     if (method === 'tools/call') {
-      const data = await runTool(params?.name, params?.arguments);
+      const data = await runTool(params?.name, ruser, params?.arguments);
       return reply({ result: { content: [{ type: 'text', text: JSON.stringify(data) }] } });
     }
     if (method === 'ping') return reply({ result: {} });

@@ -50,3 +50,13 @@ export async function requireAuth(req, res) {
     return null;
   }
 }
+
+// Soft auth: the authed userId if a valid bearer token is present, else the
+// fallback (the public 'demo' user). Never throws — for endpoints that serve a
+// public demo to logged-out callers while giving logged-in users their own data.
+export async function userOr(req, fallback = 'demo') {
+  const token = bearer(req);
+  if (!token) return fallback;
+  try { const { userId } = await verifyJWT(token); return userId; }
+  catch { return fallback; }
+}
