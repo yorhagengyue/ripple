@@ -7,6 +7,7 @@
 
 import { logMessage, sbQuery, DEMO_USER } from '../_lib/supabase.js';
 import webpush from 'web-push';
+import { costKey, checkCostGuard, recordTokens } from '../_lib/cost-guard.js';
 
 const VAPID_PUBLIC  = process.env.VITE_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY;
@@ -201,6 +202,11 @@ export default async function handler(req, res) {
   ].join('\n');
 
   try {
+    const _ckey = costKey(req);
+    if (!fromCron) {
+      const _g = await checkCostGuard(_ckey, 'nudge');
+      if (!_g.ok) { res.status(429).json({ error: 'rate_limited', reason: _g.reason }); return; }
+    }
     const upstream = await fetch('https://api.moonshot.cn/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -225,6 +231,7 @@ export default async function handler(req, res) {
     }
 
     const data = await upstream.json();
+    if (!fromCron) recordTokens(_ckey, data?.usage?.total_tokens);
     const raw = data?.choices?.[0]?.message?.content ?? '';
     let parsed;
     try { parsed = JSON.parse(raw); }
