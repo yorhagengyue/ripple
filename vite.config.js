@@ -105,6 +105,7 @@ export default defineConfig(async ({ mode }) => {
           ripplePipeline:  resolve(__dirname, 'ripple/pipeline.html'),
           rippleChat:      resolve(__dirname, 'ripple/chat.html'),
           rippleDemo:      resolve(__dirname, 'ripple/demo.html'),
+          rippleLogin:     resolve(__dirname, 'ripple/login.html'),
 
           // Peer dashboard (心涟 conversation viewer)
           peerIndex:       resolve(__dirname, 'peer/index.html'),
