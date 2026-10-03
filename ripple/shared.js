@@ -1368,18 +1368,69 @@ async function loadStory() {
   el.href = '/login';
   el.textContent = '登录';
   nav.appendChild(el);
+
+  // Account dropdown — lives on <body> with position:fixed so .nav's mobile
+  // overflow-x:auto can't clip it. Clicking the name opens this; sign-out is an
+  // explicit button inside (no more accidental logout on a single name click).
+  const menu = document.createElement('div');
+  menu.className = 'nav-auth-menu';
+  menu.style.cssText =
+    'position:fixed;display:none;min-width:200px;background:rgba(255,255,255,0.97);' +
+    '-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);' +
+    'border:1px solid rgba(26,26,26,0.12);border-radius:14px;' +
+    'box-shadow:0 18px 44px rgba(61,43,30,0.16);padding:10px;z-index:9999;' +
+    "font-family:'Manrope',sans-serif;";
+  document.body.appendChild(menu);
+
+  let open = false;
+  const place = () => {
+    const r = el.getBoundingClientRect();
+    menu.style.top = r.bottom + 8 + 'px';
+    menu.style.left = 'auto';
+    menu.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
+  };
+  const close = () => { open = false; menu.style.display = 'none'; };
+  const toggle = () => {
+    open = !open;
+    if (open) { place(); menu.style.display = 'block'; } else menu.style.display = 'none';
+  };
+  document.addEventListener('click', (e) => {
+    if (open && e.target !== el && !menu.contains(e.target)) close();
+  });
+  window.addEventListener('resize', () => { if (open) place(); });
+
   import('./auth.js').then((A) => {
     const render = (session) => {
       const u = session && session.user;
       if (u) {
         el.textContent = '● ' + String(u.email || 'account').split('@')[0];
         el.href = '#';
-        el.title = 'Sign out';
-        el.onclick = async (e) => { e.preventDefault(); await A.signOut(); location.reload(); };
+        el.title = u.email || 'Account';
+        el.onclick = (e) => { e.preventDefault(); e.stopPropagation(); toggle(); };
+        menu.innerHTML = '';
+        const who = document.createElement('div');
+        who.style.cssText =
+          'font-size:12px;color:rgba(26,26,26,0.62);padding:4px 8px 10px;' +
+          'border-bottom:1px solid rgba(26,26,26,0.08);word-break:break-all;';
+        who.textContent = u.email || 'Signed in';
+        const out = document.createElement('button');
+        out.type = 'button';
+        out.textContent = '退出登录';
+        out.style.cssText =
+          'display:block;width:100%;text-align:left;margin-top:8px;padding:9px 8px;' +
+          'border:none;border-radius:9px;background:transparent;color:#c8472d;' +
+          "font:600 14px 'Manrope',sans-serif;cursor:pointer;";
+        out.onmouseenter = () => { out.style.background = 'rgba(200,71,45,0.08)'; };
+        out.onmouseleave = () => { out.style.background = 'transparent'; };
+        out.onclick = async () => { close(); await A.signOut(); location.reload(); };
+        menu.appendChild(who);
+        menu.appendChild(out);
       } else {
         el.textContent = '登录';
         el.href = '/login';
         el.onclick = null;
+        close();
+        menu.innerHTML = '';
       }
     };
     A.getSession().then(render);
